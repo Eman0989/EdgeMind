@@ -1,0 +1,246 @@
+.app-page-shell {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 50% 20%,
+      rgba(46, 230, 214, 0.07),
+      transparent 34%
+    ),
+    #05080d;
+  color: #ecfdfb;
+}
+
+.app-page-shell-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.45;
+  background-image:
+    linear-gradient(
+      rgba(196, 255, 249, 0.025) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(196, 255, 249, 0.025) 1px,
+      transparent 1px
+    );
+  background-size: 42px 42px;
+  pointer-events: none;
+}
+
+.app-page-shell-header {
+  position: relative;
+  z-index: 2;
+  width: min(1180px, 92vw);
+  min-height: 78px;
+  display: grid;
+  grid-template-columns:
+    auto 1fr auto;
+  align-items: center;
+  gap: 32px;
+  margin: 0 auto;
+  border-bottom:
+    1px solid
+    rgba(196, 255, 249, 0.08);
+}
+
+.app-page-shell-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #ecfdfb;
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-decoration: none;
+}
+
+.app-page-shell-brand span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #2ee6d6;
+  box-shadow:
+    0 0 16px
+    rgba(46, 230, 214, 0.82);
+}
+
+.app-page-shell-nav {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+}
+
+.app-page-shell-nav a,
+.app-page-shell-actions a {
+  color:
+    rgba(236, 253, 251, 0.5);
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  font-size: 11px;
+  text-decoration: none;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.app-page-shell-nav a:hover,
+.app-page-shell-nav a.is-active {
+  color: #2ee6d6;
+}
+
+.app-page-shell-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.app-page-shell-actions
+  a.is-primary {
+  padding: 10px 14px;
+  border:
+    1px solid
+    rgba(46, 230, 214, 0.28);
+  border-radius: 7px;
+  background:
+    rgba(46, 230, 214, 0.07);
+  color: #2ee6d6;
+}
+
+.app-page-shell-content {
+  position: relative;
+  z-index: 2;
+  width: min(920px, 88vw);
+  margin: 0 auto;
+  padding: 150px 0 100px;
+  text-align: center;
+}
+
+.app-page-shell-eyebrow {
+  display: inline-block;
+  color: #2ee6d6;
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+}
+
+.app-page-shell-content h1 {
+  max-width: 760px;
+  margin: 24px auto 0;
+  font-size:
+    clamp(42px, 7vw, 82px);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+
+.app-page-shell-content > p {
+  max-width: 620px;
+  margin: 26px auto 0;
+  color:
+    rgba(236, 253, 251, 0.5);
+  font-size:
+    clamp(16px, 2vw, 19px);
+  line-height: 1.7;
+}
+
+.app-page-shell-card {
+  max-width: 720px;
+  margin: 42px auto 0;
+  padding: 24px;
+  border:
+    1px solid
+    rgba(196, 255, 249, 0.09);
+  border-radius: 12px;
+  background:
+    rgba(236, 253, 251, 0.018);
+  text-align: left;
+  box-shadow:
+    0 24px 70px
+    rgba(0, 0, 0, 0.28);
+}
+
+.app-page-shell-card strong {
+  display: block;
+  color: #ecfdfb;
+  font-size: 16px;
+}
+
+.app-page-shell-card span {
+  display: block;
+  margin-top: 9px;
+  color:
+    rgba(236, 253, 251, 0.4);
+  line-height: 1.6;
+}
+
+.app-page-shell-links {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 34px;
+}
+
+.app-page-shell-links a {
+  padding: 12px 16px;
+  border:
+    1px solid
+    rgba(196, 255, 249, 0.1);
+  border-radius: 8px;
+  color:
+    rgba(236, 253, 251, 0.66);
+  text-decoration: none;
+}
+
+.app-page-shell-links
+  a:first-child {
+  border-color:
+    rgba(46, 230, 214, 0.28);
+  background:
+    rgba(46, 230, 214, 0.07);
+  color: #2ee6d6;
+}
+
+@media (max-width: 850px) {
+  .app-page-shell-header {
+    grid-template-columns:
+      auto auto;
+  }
+
+  .app-page-shell-nav {
+    display: none;
+  }
+
+  .app-page-shell-actions {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 560px) {
+  .app-page-shell-header {
+    width: 90vw;
+  }
+
+  .app-page-shell-actions
+    > a:first-child {
+    display: none;
+  }
+
+  .app-page-shell-content {
+    padding-top: 110px;
+  }
+}

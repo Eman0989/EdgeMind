@@ -1,16 +1,27 @@
 import {
   useCallback,
+  useEffect,
   useState,
 } from "react";
+import {
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import SplashScreen from "./components/splash/SplashScreen";
-import LandingPage from "./pages/LandingPage";
+import AppRouter from "./routes/AppRouter";
 import "./App.css";
 import "./typography.css";
 
 const INTRO_STORAGE_KEY =
   "edgemind-signal-played";
 
-function shouldShowIntroOnLoad() {
+function shouldShowIntroOnLoad(
+  pathname: string,
+) {
+  if (pathname !== "/") {
+    return false;
+  }
+
   const query = new URLSearchParams(
     window.location.search,
   );
@@ -33,11 +44,30 @@ function shouldShowIntroOnLoad() {
 }
 
 export default function App() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const [showSplash, setShowSplash] =
-    useState(shouldShowIntroOnLoad);
+    useState(() =>
+      shouldShowIntroOnLoad(
+        window.location.pathname,
+      ),
+    );
 
   const [splashKey, setSplashKey] =
     useState(0);
+
+  useEffect(() => {
+    if (
+      location.pathname !== "/" &&
+      showSplash
+    ) {
+      setShowSplash(false);
+    }
+  }, [
+    location.pathname,
+    showSplash,
+  ]);
 
   const completeSplash = useCallback(() => {
     sessionStorage.setItem(
@@ -53,6 +83,8 @@ export default function App() {
       INTRO_STORAGE_KEY,
     );
 
+    navigate("/");
+
     setSplashKey(
       (currentValue) =>
         currentValue + 1,
@@ -64,9 +96,12 @@ export default function App() {
       top: 0,
       behavior: "smooth",
     });
-  }, []);
+  }, [navigate]);
 
-  if (showSplash) {
+  if (
+    location.pathname === "/" &&
+    showSplash
+  ) {
     return (
       <SplashScreen
         key={splashKey}
@@ -76,7 +111,7 @@ export default function App() {
   }
 
   return (
-    <LandingPage
+    <AppRouter
       onReplayIntro={replayIntro}
     />
   );
