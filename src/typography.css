@@ -1,0 +1,134 @@
+:root {
+  --display-font:
+    "Space Grotesk",
+    "Helvetica Neue",
+    Helvetica,
+    Arial,
+    sans-serif;
+
+  --technical-font:
+    "IBM Plex Mono",
+    "SFMono-Regular",
+    "Cascadia Code",
+    "Roboto Mono",
+    monospace;
+
+  --display: var(--display-font);
+  --mono: var(--technical-font);
+}
+
+body {
+  font-family: var(--display-font);
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+.signal-wordmark {
+  font-family: var(--display-font);
+  font-size: clamp(64px, 12vw, 176px);
+  font-weight: 700;
+  line-height: 0.82;
+  letter-spacing: -0.075em;
+  white-space: nowrap;
+}
+
+.signal-wordmark span {
+  display: inline-block;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+.signal-wordmark span + span {
+  margin-left: -0.035em;
+}
+
+.wordmark-animation-scene p,
+.signal-topbar,
+.signal-brand-status,
+.signal-button,
+.signal-bottom,
+.connection-message,
+.network-status-copy span,
+.network-status-copy small,
+.journey-node-label,
+.journey-node-latency,
+.journey-heading span,
+.latency-panel,
+.latency-panel > span,
+.latency-value,
+.cache-result,
+.cache-result strong,
+.cache-result small,
+.optimization-result,
+.optimization-result > span,
+.optimization-result strong,
+.optimization-result small {
+  font-family: var(--technical-font);
+}
+
+.network-status-copy strong,
+.journey-heading strong,
+.platform-navigation,
+.platform-logo,
+.platform-links a,
+.platform-navigation button,
+.hero-content,
+.hero-content h1,
+.hero-content p,
+.hero-actions button {
+  font-family: var(--display-font);
+}
+
+.platform-logo {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.045em;
+}
+
+.hero-content h1 {
+  max-width: 1050px;
+  margin: 0;
+  font-size: clamp(62px, 8.8vw, 136px);
+  font-weight: 700;
+  line-height: 0.84;
+  letter-spacing: -0.082em;
+}
+
+.hero-content p {
+  max-width: 610px;
+  font-size: clamp(16px, 1.3vw, 19px);
+  line-height: 1.68;
+  letter-spacing: -0.018em;
+}
+
+@media (max-width: 700px) {
+  .signal-wordmark {
+    font-size: clamp(44px, 12vw, 76px);
+    line-height: 0.84;
+    letter-spacing: -0.06em;
+  }
+
+  .signal-wordmark span {
+    min-width: 0;
+  }
+
+  .signal-wordmark span + span {
+    margin-left: -0.025em;
+  }
+
+  .hero-content h1 {
+    font-size: clamp(52px, 15vw, 82px);
+    line-height: 0.87;
+    letter-spacing: -0.075em;
+  }
+}
