@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     host: str = "127.0.0.1"
     port: int = 8000
 
+    database_url: str = (
+        "sqlite:///./edgemind.db"
+    )
+
     cors_origins: str = (
         "http://localhost:5173,"
         "http://127.0.0.1:5173"
@@ -67,7 +71,9 @@ class Settings(BaseSettings):
     ) -> list[str]:
         return [
             origin.strip()
-            for origin in self.cors_origins.split(",")
+            for origin in (
+                self.cors_origins.split(",")
+            )
             if origin.strip()
         ]
 
