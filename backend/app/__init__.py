@@ -1,0 +1,1 @@
+"""EdgeMind backend application package."""
