@@ -29,6 +29,7 @@
 ![E2E](https://img.shields.io/badge/PLAYWRIGHT-E2E_PASSING-brightgreen?style=flat-square&logo=playwright)
 ![Status](https://img.shields.io/badge/STATUS-DEPLOYMENT_READY-blueviolet?style=flat-square)
 [![EdgeMind CI](https://github.com/Eman0989/EdgeMind/actions/workflows/ci.yml/badge.svg)](https://github.com/Eman0989/EdgeMind/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Eman0989/EdgeMind?style=flat-square&label=release)](https://github.com/Eman0989/EdgeMind/releases/latest)
 
 </div>
 
