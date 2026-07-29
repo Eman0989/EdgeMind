@@ -363,3 +363,270 @@
     flex: 1;
   }
 }
+
+
+.simulations-dialog-backdrop {
+  position: fixed;
+  z-index: 2000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(3, 8, 6, 0.78);
+  backdrop-filter: blur(10px);
+  animation:
+    simulations-dialog-fade-in
+    160ms ease both;
+}
+
+.simulations-dialog {
+  width: min(100%, 520px);
+  overflow: hidden;
+  border: 1px solid rgba(79, 241, 151, 0.28);
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(24, 38, 31, 0.99),
+      rgba(8, 14, 11, 0.99)
+    );
+  box-shadow:
+    0 28px 90px rgba(0, 0, 0, 0.58),
+    inset 0 1px rgba(255, 255, 255, 0.03);
+  animation:
+    simulations-dialog-rise
+    180ms ease both;
+}
+
+.simulations-dialog > header {
+  display: grid;
+  grid-template-columns:
+    auto minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 24px;
+  border-bottom: 1px solid rgba(113, 148, 131, 0.15);
+}
+
+.simulations-dialog-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(81, 241, 151, 0.34);
+  border-radius: 12px;
+  background: rgba(57, 183, 111, 0.13);
+  color: #62f4a5;
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+.simulations-dialog header span {
+  color: #59f09f;
+  font-size: 0.63rem;
+  font-weight: 850;
+  letter-spacing: 0.16em;
+}
+
+.simulations-dialog h2 {
+  margin: 6px 0 8px;
+  font-size: 1.45rem;
+}
+
+.simulations-dialog header p {
+  margin: 0;
+  color: rgba(213, 228, 220, 0.63);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.simulations-dialog-close {
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.3rem;
+}
+
+.simulations-dialog form {
+  padding: 24px;
+}
+
+.simulations-dialog label {
+  display: block;
+  margin-bottom: 9px;
+  color: rgba(226, 238, 232, 0.86);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.simulations-dialog input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid rgba(111, 151, 130, 0.28);
+  border-radius: 11px;
+  outline: none;
+  background: rgba(7, 14, 10, 0.86);
+  color: #f0f8f4;
+  font: inherit;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.simulations-dialog input:focus {
+  border-color: rgba(80, 243, 151, 0.7);
+  box-shadow:
+    0 0 0 3px rgba(80, 243, 151, 0.1);
+}
+
+.simulations-dialog-input-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 9px;
+  color: rgba(184, 205, 194, 0.52);
+  font-size: 0.68rem;
+}
+
+.simulations-dialog-input-meta strong {
+  color: rgba(215, 232, 223, 0.68);
+}
+
+.simulations-dialog-error {
+  margin: 16px 0 0;
+  padding: 11px 13px;
+  border: 1px solid rgba(255, 105, 105, 0.28);
+  border-radius: 9px;
+  background: rgba(104, 28, 28, 0.22);
+  color: #ffabab;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.simulations-dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 22px;
+}
+
+.simulations-dialog.is-danger {
+  border-color: rgba(255, 104, 104, 0.3);
+}
+
+.simulations-dialog.is-danger
+.simulations-dialog-icon {
+  border-color: rgba(255, 105, 105, 0.32);
+  background: rgba(164, 42, 42, 0.17);
+  color: #ff8e8e;
+}
+
+.simulations-dialog.is-danger
+header span {
+  color: #ff8f8f;
+}
+
+.simulations-dialog-record {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 24px 24px 0;
+  padding: 16px;
+  border: 1px solid rgba(116, 150, 133, 0.18);
+  border-radius: 11px;
+  background: rgba(6, 12, 9, 0.64);
+}
+
+.simulations-dialog-record small {
+  color: #60efa2;
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    monospace;
+  font-size: 0.68rem;
+}
+
+.simulations-dialog-record strong {
+  color: #f2f7f4;
+}
+
+.simulations-dialog-record span {
+  color: rgba(193, 214, 203, 0.58);
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    monospace;
+  font-size: 0.72rem;
+}
+
+.simulations-dialog.is-danger > footer {
+  padding: 24px;
+}
+
+.simulations-dialog-delete {
+  border-color: rgba(255, 98, 98, 0.44) !important;
+  background:
+    linear-gradient(
+      135deg,
+      #ff8585,
+      #d94343
+    ) !important;
+  color: #200606 !important;
+}
+
+@keyframes simulations-dialog-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes simulations-dialog-rise {
+  from {
+    opacity: 0;
+    transform:
+      translateY(12px)
+      scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+@media (max-width: 560px) {
+  .simulations-dialog-backdrop {
+    align-items: end;
+    padding: 12px;
+  }
+
+  .simulations-dialog {
+    width: 100%;
+  }
+
+  .simulations-dialog > header {
+    padding: 20px;
+  }
+
+  .simulations-dialog form,
+  .simulations-dialog.is-danger > footer {
+    padding: 20px;
+  }
+
+  .simulations-dialog footer {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .simulations-dialog footer button {
+    width: 100%;
+  }
+}

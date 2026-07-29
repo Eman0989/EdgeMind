@@ -112,6 +112,64 @@ export default function SimulationsPage() {
     setTotalPages,
   ] = useState(0);
 
+  const [
+    renameTarget,
+    setRenameTarget,
+  ] = useState<
+    SimulationHistoryItem | null
+  >(null);
+
+  const [
+    renameValue,
+    setRenameValue,
+  ] = useState("");
+
+  const [
+    deleteTarget,
+    setDeleteTarget,
+  ] = useState<
+    SimulationHistoryItem | null
+  >(null);
+
+  const [
+    dialogError,
+    setDialogError,
+  ] = useState<string | null>(
+    null,
+  );
+
+
+  const closeDialog = () => {
+    if (busySimulationId) {
+      return;
+    }
+
+    setRenameTarget(null);
+    setRenameValue("");
+    setDeleteTarget(null);
+    setDialogError(null);
+  };
+
+
+  const openRenameDialog = (
+    simulation: SimulationHistoryItem,
+  ) => {
+    setDeleteTarget(null);
+    setRenameTarget(simulation);
+    setRenameValue(simulation.name);
+    setDialogError(null);
+  };
+
+
+  const openDeleteDialog = (
+    simulation: SimulationHistoryItem,
+  ) => {
+    setRenameTarget(null);
+    setRenameValue("");
+    setDeleteTarget(simulation);
+    setDialogError(null);
+  };
+
 
   const loadSimulations =
     useCallback(
@@ -167,6 +225,55 @@ export default function SimulationsPage() {
   useEffect(() => {
     void loadSimulations();
   }, [loadSimulations]);
+
+
+  useEffect(() => {
+    if (
+      !renameTarget &&
+      !deleteTarget
+    ) {
+      return;
+    }
+
+    const previousOverflow =
+      document.body.style.overflow;
+
+    document.body.style.overflow =
+      "hidden";
+
+    const handleKeyDown = (
+      event: KeyboardEvent,
+    ) => {
+      if (
+        event.key === "Escape" &&
+        !busySimulationId
+      ) {
+        setRenameTarget(null);
+        setRenameValue("");
+        setDeleteTarget(null);
+        setDialogError(null);
+      }
+    };
+
+    document.addEventListener(
+      "keydown",
+      handleKeyDown,
+    );
+
+    return () => {
+      document.body.style.overflow =
+        previousOverflow;
+
+      document.removeEventListener(
+        "keydown",
+        handleKeyDown,
+      );
+    };
+  }, [
+    busySimulationId,
+    deleteTarget,
+    renameTarget,
+  ]);
 
 
   const openSimulation =
@@ -266,45 +373,44 @@ export default function SimulationsPage() {
     };
 
 
-  const renameSimulation =
-    async (
-      simulation: SimulationHistoryItem,
-    ) => {
-      if (!token) {
-        return;
-      }
-
-      const nextName =
-        window.prompt(
-          "Enter a new simulation name:",
-          simulation.name,
-        )?.trim();
-
+  const submitRename =
+    async () => {
       if (
-        !nextName ||
-        nextName === simulation.name
+        !token ||
+        !renameTarget
       ) {
         return;
       }
 
+      const nextName =
+        renameValue.trim();
+
       if (nextName.length < 2) {
-        setError(
+        setDialogError(
           "The simulation name must contain at least two characters.",
         );
 
         return;
       }
 
+      if (
+        nextName ===
+        renameTarget.name
+      ) {
+        closeDialog();
+        return;
+      }
+
       setBusySimulationId(
-        simulation.id,
+        renameTarget.id,
       );
 
-      setError(null);
+      setDialogError(null);
 
       try {
         const renamed =
           await simulationService.rename(
-            simulation.id,
+            renameTarget.id,
             nextName,
             token,
           );
@@ -314,7 +420,7 @@ export default function SimulationsPage() {
             current.map(
               (item) =>
                 item.id ===
-                simulation.id
+                renameTarget.id
                   ? {
                       ...item,
                       name:
@@ -323,8 +429,11 @@ export default function SimulationsPage() {
                   : item,
             ),
         );
+
+        setRenameTarget(null);
+        setRenameValue("");
       } catch (requestError) {
-        setError(
+        setDialogError(
           getErrorMessage(
             requestError,
           ),
@@ -337,34 +446,28 @@ export default function SimulationsPage() {
     };
 
 
-  const deleteSimulation =
-    async (
-      simulation: SimulationHistoryItem,
-    ) => {
-      if (!token) {
-        return;
-      }
-
-      const confirmed =
-        window.confirm(
-          `Delete "${simulation.name}"? This action cannot be undone.`,
-        );
-
-      if (!confirmed) {
+  const confirmDelete =
+    async () => {
+      if (
+        !token ||
+        !deleteTarget
+      ) {
         return;
       }
 
       setBusySimulationId(
-        simulation.id,
+        deleteTarget.id,
       );
 
-      setError(null);
+      setDialogError(null);
 
       try {
         await simulationService.delete(
-          simulation.id,
+          deleteTarget.id,
           token,
         );
+
+        setDeleteTarget(null);
 
         if (
           simulations.length === 1 &&
@@ -378,7 +481,7 @@ export default function SimulationsPage() {
           await loadSimulations();
         }
       } catch (requestError) {
-        setError(
+        setDialogError(
           getErrorMessage(
             requestError,
           ),
@@ -655,7 +758,7 @@ export default function SimulationsPage() {
                           type="button"
                           disabled={isBusy}
                           onClick={() => {
-                            void renameSimulation(
+                            openRenameDialog(
                               simulation,
                             );
                           }}
@@ -668,7 +771,7 @@ export default function SimulationsPage() {
                           className="is-delete"
                           disabled={isBusy}
                           onClick={() => {
-                            void deleteSimulation(
+                            openDeleteDialog(
                               simulation,
                             );
                           }}
@@ -735,6 +838,249 @@ export default function SimulationsPage() {
               </footer>
             </div>
           )}
+        {renameTarget && (
+          <div
+            className="simulations-dialog-backdrop"
+            onMouseDown={(event) => {
+              if (
+                event.target ===
+                event.currentTarget
+              ) {
+                closeDialog();
+              }
+            }}
+          >
+            <div
+              className="simulations-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="rename-simulation-title"
+            >
+              <header>
+                <div className="simulations-dialog-icon">
+                  ✎
+                </div>
+
+                <div>
+                  <span>
+                    EDIT SAVED RUN
+                  </span>
+
+                  <h2 id="rename-simulation-title">
+                    Rename simulation
+                  </h2>
+
+                  <p>
+                    Update the display name
+                    for {renameTarget.id}.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className="simulations-dialog-close"
+                  aria-label="Close rename dialog"
+                  disabled={
+                    busySimulationId ===
+                    renameTarget.id
+                  }
+                  onClick={closeDialog}
+                >
+                  ×
+                </button>
+              </header>
+
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void submitRename();
+                }}
+              >
+                <label
+                  htmlFor="simulation-rename-input"
+                >
+                  Simulation name
+                </label>
+
+                <input
+                  id="simulation-rename-input"
+                  type="text"
+                  autoFocus
+                  maxLength={200}
+                  value={renameValue}
+                  disabled={
+                    busySimulationId ===
+                    renameTarget.id
+                  }
+                  onChange={(event) => {
+                    setRenameValue(
+                      event.target.value,
+                    );
+
+                    setDialogError(null);
+                  }}
+                />
+
+                <div className="simulations-dialog-input-meta">
+                  <span>
+                    Use a clear name that
+                    identifies this network run.
+                  </span>
+
+                  <strong>
+                    {renameValue.length}/200
+                  </strong>
+                </div>
+
+                {dialogError && (
+                  <p
+                    className="simulations-dialog-error"
+                    role="alert"
+                  >
+                    {dialogError}
+                  </p>
+                )}
+
+                <footer>
+                  <button
+                    type="button"
+                    disabled={
+                      busySimulationId ===
+                      renameTarget.id
+                    }
+                    onClick={closeDialog}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="is-primary"
+                    disabled={
+                      busySimulationId ===
+                      renameTarget.id
+                    }
+                  >
+                    {busySimulationId ===
+                    renameTarget.id
+                      ? "Saving…"
+                      : "Save changes"}
+                  </button>
+                </footer>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {deleteTarget && (
+          <div
+            className="simulations-dialog-backdrop"
+            onMouseDown={(event) => {
+              if (
+                event.target ===
+                event.currentTarget
+              ) {
+                closeDialog();
+              }
+            }}
+          >
+            <div
+              className="simulations-dialog is-danger"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="delete-simulation-title"
+            >
+              <header>
+                <div className="simulations-dialog-icon">
+                  !
+                </div>
+
+                <div>
+                  <span>
+                    PERMANENT ACTION
+                  </span>
+
+                  <h2 id="delete-simulation-title">
+                    Delete simulation?
+                  </h2>
+
+                  <p>
+                    This saved run and its
+                    route data will be removed
+                    permanently.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className="simulations-dialog-close"
+                  aria-label="Close delete dialog"
+                  disabled={
+                    busySimulationId ===
+                    deleteTarget.id
+                  }
+                  onClick={closeDialog}
+                >
+                  ×
+                </button>
+              </header>
+
+              <div className="simulations-dialog-record">
+                <small>
+                  {deleteTarget.id}
+                </small>
+
+                <strong>
+                  {deleteTarget.name}
+                </strong>
+
+                <span>
+                  {deleteTarget.route}
+                </span>
+              </div>
+
+              {dialogError && (
+                <p
+                  className="simulations-dialog-error"
+                  role="alert"
+                >
+                  {dialogError}
+                </p>
+              )}
+
+              <footer>
+                <button
+                  type="button"
+                  disabled={
+                    busySimulationId ===
+                    deleteTarget.id
+                  }
+                  onClick={closeDialog}
+                >
+                  Keep simulation
+                </button>
+
+                <button
+                  type="button"
+                  className="simulations-dialog-delete"
+                  disabled={
+                    busySimulationId ===
+                    deleteTarget.id
+                  }
+                  onClick={() => {
+                    void confirmDelete();
+                  }}
+                >
+                  {busySimulationId ===
+                  deleteTarget.id
+                    ? "Deleting…"
+                    : "Delete permanently"}
+                </button>
+              </footer>
+            </div>
+          </div>
+        )}
+
       </section>
     </DashboardLayout>
   );
