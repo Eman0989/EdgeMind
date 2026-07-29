@@ -17,6 +17,11 @@ import DashboardLayout from "../components/dashboard/DashboardLayout";
 import LiveNetworkDashboard from "../components/dashboard/LiveNetworkDashboard";
 
 import {
+  ErrorState,
+  LoadingSkeleton,
+} from "../components/feedback/AsyncState";
+
+import {
   dashboardService,
 } from "../services/dashboardService";
 
@@ -323,10 +328,7 @@ export default function DashboardPage() {
       [snapshot],
     );
 
-  if (
-    isLoading ||
-    !snapshot
-  ) {
+  if (isLoading) {
     return (
       <DashboardLayout>
         <section className="dashboard-overview">
@@ -337,34 +339,57 @@ export default function DashboardPage() {
               </span>
 
               <h1>
-                {error
-                  ? "Dashboard unavailable."
-                  : "Loading your network."}
+                Loading your network.
               </h1>
 
               <p>
-                {error
-                  ? error
-                  : (
-                      "Retrieving metrics, " +
-                      "routes, and node health."
-                    )}
+                Retrieving metrics, routes,
+                and node health.
               </p>
             </div>
-
-            {error && (
-              <button
-                className="dashboard-primary-action"
-                type="button"
-                onClick={() => {
-                  void loadDashboard();
-                }}
-              >
-                Try again
-                <span>↻</span>
-              </button>
-            )}
           </header>
+
+          <LoadingSkeleton
+            cards={4}
+            rows={3}
+          />
+        </section>
+      </DashboardLayout>
+    );
+  }
+
+  if (!snapshot) {
+    return (
+      <DashboardLayout>
+        <section className="dashboard-overview">
+          <header className="dashboard-overview-heading">
+            <div>
+              <span>
+                NETWORK OVERVIEW
+              </span>
+
+              <h1>
+                Dashboard unavailable.
+              </h1>
+
+              <p>
+                EdgeMind could not retrieve
+                the latest network snapshot.
+              </p>
+            </div>
+          </header>
+
+          <ErrorState
+            title="Dashboard data unavailable"
+            message={
+              error ||
+              "The dashboard request could not be completed."
+            }
+            retryLabel="Retry dashboard"
+            onRetry={() => {
+              void loadDashboard();
+            }}
+          />
         </section>
       </DashboardLayout>
     );

@@ -7,6 +7,9 @@ import App from "./App";
 import {
   AuthProvider,
 } from "./components/auth/AuthContext";
+import {
+  NotificationProvider,
+} from "./components/feedback/NotificationContext";
 import "./index.css";
 
 const rootElement =
@@ -21,9 +24,11 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
+      <NotificationProvider>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </NotificationProvider>
     </BrowserRouter>
   </StrictMode>,
 );

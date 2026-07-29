@@ -296,6 +296,24 @@
   cursor: not-allowed;
 }
 
+.settings-form input.is-invalid {
+  border-color:
+    rgba(255, 122, 134, 0.48);
+  box-shadow:
+    0 0 0 3px
+    rgba(255, 122, 134, 0.06);
+}
+
+.settings-field-error {
+  display: block;
+  margin-top: 8px;
+  color: var(--dashboard-danger);
+  font-family: var(--dashboard-mono);
+  font-size: 7px;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+}
+
 .settings-form-note {
   margin-top: 12px;
   color: var(--dashboard-dim);

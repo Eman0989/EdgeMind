@@ -15,6 +15,16 @@ import {
 import DashboardLayout from "../components/dashboard/DashboardLayout";
 
 import {
+  useNotifications,
+} from "../components/feedback/NotificationContext";
+
+import {
+  EmptyState,
+  ErrorState,
+  LoadingSkeleton,
+} from "../components/feedback/AsyncState";
+
+import {
   simulationService,
 } from "../services/simulationService";
 
@@ -66,6 +76,10 @@ const PAGE_SIZE = 10;
 
 export default function SimulationsPage() {
   const navigate = useNavigate();
+
+  const {
+    notify,
+  } = useNotifications();
 
   const {
     token,
@@ -351,6 +365,13 @@ export default function SimulationsPage() {
             token,
           );
 
+        notify({
+          tone: "success",
+          title: "Simulation rerun complete",
+          message:
+            `${rerun.result.id} was saved to your history.`,
+        });
+
         navigate(
           "/simulation-result",
           {
@@ -432,12 +453,26 @@ export default function SimulationsPage() {
 
         setRenameTarget(null);
         setRenameValue("");
+
+        notify({
+          tone: "success",
+          title: "Simulation renamed",
+          message:
+            `${renameTarget.id} is now named "${renamed.name}".`,
+        });
       } catch (requestError) {
-        setDialogError(
+        const message =
           getErrorMessage(
             requestError,
-          ),
-        );
+          );
+
+        setDialogError(message);
+
+        notify({
+          tone: "error",
+          title: "Rename failed",
+          message,
+        });
       } finally {
         setBusySimulationId(
           null,
@@ -467,7 +502,17 @@ export default function SimulationsPage() {
           token,
         );
 
+        const deletedId =
+          deleteTarget.id;
+
         setDeleteTarget(null);
+
+        notify({
+          tone: "success",
+          title: "Simulation deleted",
+          message:
+            `${deletedId} was removed permanently.`,
+        });
 
         if (
           simulations.length === 1 &&
@@ -481,11 +526,18 @@ export default function SimulationsPage() {
           await loadSimulations();
         }
       } catch (requestError) {
-        setDialogError(
+        const message =
           getErrorMessage(
             requestError,
-          ),
-        );
+          );
+
+        setDialogError(message);
+
+        notify({
+          tone: "error",
+          title: "Delete failed",
+          message,
+        });
       } finally {
         setBusySimulationId(
           null,
@@ -572,52 +624,45 @@ export default function SimulationsPage() {
           </span>
         </div>
 
-        {error && (
-          <div
-            className="simulations-history-message is-error"
-            role="alert"
-          >
-            {error}
-          </div>
+        {error && !loading && (
+          <ErrorState
+            title="Simulation history unavailable"
+            message={error}
+            retryLabel="Retry history"
+            onRetry={() => {
+              void loadSimulations();
+            }}
+          />
         )}
 
         {loading && (
-          <div className="simulations-history-message">
-            Loading saved simulations…
-          </div>
+          <LoadingSkeleton
+            cards={3}
+            rows={5}
+          />
         )}
 
         {!loading &&
           !error &&
           simulations.length === 0 && (
-            <div className="simulations-history-empty">
-              <span>
-                NO SAVED RUNS
-              </span>
-
-              <strong>
-                Run your first simulation
-              </strong>
-
-              <p>
-                Completed simulations will
-                automatically appear here.
-              </p>
-
-              <button
-                type="button"
-                onClick={() => {
-                  navigate(
-                    "/simulator",
-                  );
-                }}
-              >
-                Open simulator
-              </button>
-            </div>
+            <EmptyState
+              eyebrow="NO SAVED RUNS"
+              title="Run your first simulation"
+              message={
+                "Completed simulations will " +
+                "automatically appear here."
+              }
+              actionLabel="Open simulator"
+              onAction={() => {
+                navigate(
+                  "/simulator",
+                );
+              }}
+            />
           )}
 
         {!loading &&
+          !error &&
           simulations.length > 0 && (
             <div className="simulations-history-list">
               <div className="simulations-history-columns">

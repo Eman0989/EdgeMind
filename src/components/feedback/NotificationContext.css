@@ -1,0 +1,205 @@
+.notification-viewport {
+  position: fixed;
+  top: 92px;
+  right: 22px;
+  z-index: 200;
+  width: min(390px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.notification-toast {
+  min-height: 92px;
+  display: grid;
+  grid-template-columns:
+    auto minmax(0, 1fr) auto;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 15px;
+  border:
+    1px solid
+    rgba(46, 230, 214, 0.2);
+  border-radius: 11px;
+  background:
+    rgba(7, 12, 18, 0.97);
+  color: var(
+    --dashboard-text,
+    #ecfdfb
+  );
+  box-shadow:
+    0 24px 70px
+    rgba(0, 0, 0, 0.46);
+  backdrop-filter: blur(18px);
+  animation:
+    notification-enter
+    180ms ease-out;
+  pointer-events: auto;
+}
+
+.notification-toast-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border:
+    1px solid
+    rgba(46, 230, 214, 0.25);
+  border-radius: 8px;
+  background:
+    rgba(46, 230, 214, 0.06);
+  color:
+    var(
+      --dashboard-cyan,
+      #2ee6d6
+    );
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  font-size: 11px;
+}
+
+.notification-toast
+  > div:nth-child(2) {
+  min-width: 0;
+}
+
+.notification-toast span,
+.notification-toast strong {
+  display: block;
+}
+
+.notification-toast span {
+  color:
+    var(
+      --dashboard-cyan,
+      #2ee6d6
+    );
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  font-size: 6px;
+  letter-spacing: 0.13em;
+}
+
+.notification-toast strong {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 580;
+}
+
+.notification-toast p {
+  margin: 6px 0 0;
+  color:
+    rgba(236, 253, 251, 0.52);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.notification-toast > button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color:
+    rgba(236, 253, 251, 0.4);
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.notification-toast
+  > button:hover {
+  background:
+    rgba(236, 253, 251, 0.05);
+  color:
+    rgba(236, 253, 251, 0.9);
+}
+
+.notification-toast.is-success {
+  border-color:
+    rgba(112, 227, 165, 0.24);
+}
+
+.notification-toast.is-success
+  .notification-toast-icon,
+.notification-toast.is-success span {
+  color:
+    var(
+      --dashboard-green,
+      #70e3a5
+    );
+}
+
+.notification-toast.is-success
+  .notification-toast-icon {
+  border-color:
+    rgba(112, 227, 165, 0.25);
+  background:
+    rgba(112, 227, 165, 0.06);
+}
+
+.notification-toast.is-error {
+  border-color:
+    rgba(255, 122, 134, 0.28);
+}
+
+.notification-toast.is-error
+  .notification-toast-icon,
+.notification-toast.is-error span {
+  color:
+    var(
+      --dashboard-danger,
+      #ff7a86
+    );
+}
+
+.notification-toast.is-error
+  .notification-toast-icon {
+  border-color:
+    rgba(255, 122, 134, 0.28);
+  background:
+    rgba(255, 122, 134, 0.06);
+}
+
+@keyframes notification-enter {
+  from {
+    opacity: 0;
+    transform:
+      translateY(-8px)
+      scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+@media (max-width: 600px) {
+  .notification-viewport {
+    top: 82px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+  }
+}
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+  .notification-toast {
+    animation: none;
+  }
+}

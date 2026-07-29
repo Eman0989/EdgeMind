@@ -15,6 +15,10 @@ import {
 
 import DashboardLayout from "../components/dashboard/DashboardLayout";
 
+import {
+  useNotifications,
+} from "../components/feedback/NotificationContext";
+
 import "./SettingsPage.css";
 
 
@@ -69,6 +73,10 @@ export default function SettingsPage() {
   const navigate = useNavigate();
 
   const {
+    notify,
+  } = useNotifications();
+
+  const {
     user,
     updateProfile,
     logout,
@@ -107,6 +115,16 @@ export default function SettingsPage() {
     null,
   );
 
+  const [
+    nameTouched,
+    setNameTouched,
+  ] = useState(false);
+
+  const [
+    emailTouched,
+    setEmailTouched,
+  ] = useState(false);
+
 
   useEffect(() => {
     setName(
@@ -134,9 +152,25 @@ export default function SettingsPage() {
     normalizedEmail !==
       (user?.email ?? "");
 
+  const nameError =
+    normalizedName.length === 0
+      ? "Your full name is required."
+      : normalizedName.length < 2
+        ? "Use at least two characters."
+        : null;
+
+  const emailError =
+    normalizedEmail.length === 0
+      ? "Your email address is required."
+      : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+          normalizedEmail,
+        )
+        ? "Enter a valid email address."
+        : null;
+
   const isValid =
-    normalizedName.length >= 2 &&
-    normalizedEmail.includes("@");
+    !nameError &&
+    !emailError;
 
   const initials = useMemo(
     () =>
@@ -155,10 +189,12 @@ export default function SettingsPage() {
 
     setSuccessMessage(null);
     setErrorMessage(null);
+    setNameTouched(true);
+    setEmailTouched(true);
 
     if (!isValid) {
       setErrorMessage(
-        "Enter a valid name and email address.",
+        "Review the highlighted account fields.",
       );
 
       return;
@@ -179,12 +215,28 @@ export default function SettingsPage() {
         result.message,
       );
 
+      notify({
+        tone: "error",
+        title: "Profile update failed",
+        message: result.message,
+      });
+
       return;
     }
 
     setSuccessMessage(
       result.message,
     );
+
+    setNameTouched(false);
+    setEmailTouched(false);
+
+    notify({
+      tone: "success",
+      title: "Profile updated",
+      message:
+        "Your account details were saved successfully.",
+    });
   };
 
 
@@ -199,6 +251,8 @@ export default function SettingsPage() {
 
     setSuccessMessage(null);
     setErrorMessage(null);
+    setNameTouched(false);
+    setEmailTouched(false);
   };
 
 
@@ -332,6 +386,7 @@ export default function SettingsPage() {
               <form
                 className="settings-form"
                 onSubmit={handleSubmit}
+                noValidate
               >
                 <label>
                   <span>
@@ -346,6 +401,27 @@ export default function SettingsPage() {
                     autoComplete="name"
                     placeholder="Your full name"
                     disabled={saving}
+                    className={
+                      nameTouched &&
+                      nameError
+                        ? "is-invalid"
+                        : undefined
+                    }
+                    aria-invalid={
+                      Boolean(
+                        nameTouched &&
+                        nameError,
+                      )
+                    }
+                    aria-describedby={
+                      nameTouched &&
+                      nameError
+                        ? "settings-name-error"
+                        : undefined
+                    }
+                    onBlur={() => {
+                      setNameTouched(true);
+                    }}
                     onChange={(event) => {
                       setName(
                         event.target.value,
@@ -355,6 +431,16 @@ export default function SettingsPage() {
                       setErrorMessage(null);
                     }}
                   />
+
+                  {nameTouched &&
+                    nameError && (
+                      <small
+                        id="settings-name-error"
+                        className="settings-field-error"
+                      >
+                        {nameError}
+                      </small>
+                    )}
                 </label>
 
                 <label>
@@ -369,6 +455,27 @@ export default function SettingsPage() {
                     autoComplete="email"
                     placeholder="name@example.com"
                     disabled={saving}
+                    className={
+                      emailTouched &&
+                      emailError
+                        ? "is-invalid"
+                        : undefined
+                    }
+                    aria-invalid={
+                      Boolean(
+                        emailTouched &&
+                        emailError,
+                      )
+                    }
+                    aria-describedby={
+                      emailTouched &&
+                      emailError
+                        ? "settings-email-error"
+                        : undefined
+                    }
+                    onBlur={() => {
+                      setEmailTouched(true);
+                    }}
                     onChange={(event) => {
                       setEmail(
                         event.target.value,
@@ -378,6 +485,16 @@ export default function SettingsPage() {
                       setErrorMessage(null);
                     }}
                   />
+
+                  {emailTouched &&
+                    emailError && (
+                      <small
+                        id="settings-email-error"
+                        className="settings-field-error"
+                      >
+                        {emailError}
+                      </small>
+                    )}
                 </label>
 
                 <div className="settings-form-note">
