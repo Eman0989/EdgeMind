@@ -1,0 +1,322 @@
+.simulations-history {
+  min-height: 100%;
+  padding: 36px;
+  color: #f4f8f6;
+}
+
+.simulations-history-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 26px;
+}
+
+.simulations-history-header > div:first-child {
+  max-width: 720px;
+}
+
+.simulations-history-header span {
+  color: #56f39a;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.simulations-history-header h1 {
+  margin: 8px 0 10px;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 1;
+}
+
+.simulations-history-header p {
+  max-width: 650px;
+  margin: 0;
+  color: rgba(226, 236, 231, 0.7);
+  line-height: 1.7;
+}
+
+.simulations-history-header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.simulations-history button {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(120, 151, 136, 0.25);
+  border-radius: 10px;
+  background: rgba(18, 27, 23, 0.9);
+  color: #edf6f1;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.simulations-history button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(82, 245, 151, 0.6);
+  background: rgba(31, 48, 40, 0.95);
+}
+
+.simulations-history button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.simulations-history button.is-primary,
+.simulations-history button.is-open {
+  border-color: rgba(69, 246, 146, 0.5);
+  background:
+    linear-gradient(
+      135deg,
+      #58f59d,
+      #18b868
+    );
+  color: #06140d;
+}
+
+.simulations-history-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.simulations-history-summary > span {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 96px;
+  padding: 20px;
+  border: 1px solid rgba(114, 145, 131, 0.16);
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(21, 30, 26, 0.98),
+      rgba(12, 18, 15, 0.98)
+    );
+}
+
+.simulations-history-summary small,
+.simulations-history-row small {
+  color: rgba(185, 205, 195, 0.56);
+  font-size: 0.63rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+.simulations-history-summary strong {
+  font-size: 1.22rem;
+}
+
+.simulations-history-message,
+.simulations-history-empty {
+  padding: 28px;
+  border: 1px solid rgba(112, 145, 129, 0.2);
+  border-radius: 16px;
+  background: rgba(14, 21, 18, 0.94);
+  color: rgba(228, 238, 233, 0.75);
+}
+
+.simulations-history-message.is-error {
+  border-color: rgba(255, 116, 116, 0.35);
+  color: #ffadad;
+}
+
+.simulations-history-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.simulations-history-empty strong {
+  font-size: 1.5rem;
+}
+
+.simulations-history-empty p {
+  margin: 0;
+  color: rgba(216, 228, 222, 0.65);
+}
+
+.simulations-history-list {
+  overflow: hidden;
+  border: 1px solid rgba(112, 145, 129, 0.18);
+  border-radius: 16px;
+  background: rgba(10, 16, 13, 0.94);
+}
+
+.simulations-history-columns,
+.simulations-history-row {
+  display: grid;
+  grid-template-columns:
+    minmax(190px, 1.1fr)
+    minmax(170px, 1fr)
+    minmax(230px, 1.25fr)
+    minmax(145px, 0.85fr)
+    minmax(240px, 1.2fr);
+  gap: 18px;
+  align-items: center;
+}
+
+.simulations-history-columns {
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(112, 145, 129, 0.16);
+  color: rgba(170, 194, 181, 0.52);
+  font-size: 0.64rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.simulations-history-row {
+  padding: 20px;
+  border-bottom: 1px solid rgba(112, 145, 129, 0.11);
+}
+
+.simulations-history-row:last-child {
+  border-bottom: 0;
+}
+
+.simulations-history-name,
+.simulations-history-route,
+.simulations-history-date {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.simulations-history-name > small {
+  color: #57efa0;
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    monospace;
+  font-size: 0.7rem;
+}
+
+.simulations-history-name > strong,
+.simulations-history-route > strong {
+  line-height: 1.4;
+}
+
+.simulations-history-name > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: rgba(194, 216, 205, 0.68);
+  font-size: 0.72rem;
+  text-transform: capitalize;
+}
+
+.simulations-history-name i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4df197;
+  box-shadow: 0 0 10px rgba(77, 241, 151, 0.7);
+}
+
+.simulations-history-route strong {
+  color: #62eca2;
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    monospace;
+  font-size: 0.82rem;
+}
+
+.simulations-history-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.simulations-history-metrics > span {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.simulations-history-metrics strong {
+  font-size: 0.85rem;
+}
+
+.simulations-history-date strong {
+  color: rgba(226, 236, 231, 0.78);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.simulations-history-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.simulations-history-actions button {
+  min-height: 34px;
+  padding: 0 11px;
+  font-size: 0.72rem;
+}
+
+.simulations-history-actions button.is-delete {
+  border-color: rgba(255, 100, 100, 0.22);
+  color: #ff9e9e;
+}
+
+.simulations-history-actions button.is-delete:hover:not(:disabled) {
+  border-color: rgba(255, 100, 100, 0.5);
+  background: rgba(82, 24, 24, 0.45);
+}
+
+@media (max-width: 1250px) {
+  .simulations-history-columns {
+    display: none;
+  }
+
+  .simulations-history-row {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .simulations-history-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  .simulations-history {
+    padding: 24px 18px;
+  }
+
+  .simulations-history-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .simulations-history-header-actions {
+    flex-wrap: wrap;
+  }
+
+  .simulations-history-summary,
+  .simulations-history-row {
+    grid-template-columns: 1fr;
+  }
+
+  .simulations-history-actions {
+    grid-column: auto;
+  }
+
+  .simulations-history-metrics {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+}

@@ -11,6 +11,8 @@ import type {
   RunSimulationRequest,
   RunSimulationResponse,
   SavedSimulation,
+  SimulationRenameResponse,
+  SimulationListResponse,
   SimulationConfig,
   SimulationPrediction,
   SimulationResult,
@@ -497,6 +499,73 @@ export function getSavedSimulations():
 }
 
 
+export function listSimulations(
+  token: string,
+) {
+  return apiClient.get<
+    SimulationListResponse
+  >(
+    "/api/simulations",
+    {
+      token,
+    },
+  );
+}
+
+
+export function getSimulation(
+  simulationId: string,
+  token: string,
+) {
+  return apiClient.get<
+    CompletedSimulation
+  >(
+    `/api/simulations/${encodeURIComponent(
+      simulationId,
+    )}`,
+    {
+      token,
+    },
+  );
+}
+
+
+export function renameSimulation(
+  simulationId: string,
+  name: string,
+  token: string,
+) {
+  return apiClient.patch<
+    SimulationRenameResponse
+  >(
+    `/api/simulations/${encodeURIComponent(
+      simulationId,
+    )}`,
+    {
+      name,
+    },
+    {
+      token,
+    },
+  );
+}
+
+
+export function deleteSimulation(
+  simulationId: string,
+  token: string,
+) {
+  return apiClient.delete<void>(
+    `/api/simulations/${encodeURIComponent(
+      simulationId,
+    )}`,
+    {
+      token,
+    },
+  );
+}
+
+
 export const simulationService = {
   predict:
     predictSimulation,
@@ -512,4 +581,16 @@ export const simulationService = {
 
   getSaved:
     getSavedSimulations,
+
+  list:
+    listSimulations,
+
+  getById:
+    getSimulation,
+
+  rename:
+    renameSimulation,
+
+  delete:
+    deleteSimulation,
 };

@@ -69,32 +69,36 @@ export interface SavedSimulation
   savedAt: string;
 }
 
-/**
- * POST /api/simulations
- *
- * The FastAPI backend will receive this
- * request body.
- */
 export interface RunSimulationRequest {
   config: SimulationConfig;
 }
 
-/**
- * POST /api/simulations
- *
- * The FastAPI backend must return this
- * response body.
- */
 export type RunSimulationResponse =
   CompletedSimulation;
 
-/**
- * GET /api/simulations
- *
- * The backend should return the current
- * user's saved simulations.
- */
+export interface SimulationHistoryItem {
+  id: string;
+  name: string;
+  status: string;
+  route: string;
+  latencyMs: number;
+  cacheHitRate: number;
+  confidence: number;
+  createdAt: string;
+  completedAt: string | null;
+}
+
 export interface SimulationListResponse {
-  simulations: SavedSimulation[];
+  simulations: SimulationHistoryItem[];
   total: number;
+}
+
+export interface SimulationRenameRequest {
+  name: string;
+}
+
+export interface SimulationRenameResponse {
+  id: string;
+  name: string;
+  updatedAt: string;
 }

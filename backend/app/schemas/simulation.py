@@ -131,3 +131,58 @@ class CompletedSimulationResponse(
     config: SimulationConfigSchema
     result: SimulationResultSchema
     completed_at: datetime
+
+
+class SimulationHistoryItem(
+    CamelCaseModel
+):
+    id: str
+    name: str
+    status: str
+    route: str
+
+    latency_ms: int = Field(
+        ge=0,
+    )
+
+    cache_hit_rate: float = Field(
+        ge=0,
+        le=100,
+    )
+
+    confidence: int = Field(
+        ge=0,
+        le=100,
+    )
+
+    created_at: datetime
+    completed_at: datetime | None
+
+
+class SimulationListResponse(
+    CamelCaseModel
+):
+    simulations: list[
+        SimulationHistoryItem
+    ]
+
+    total: int = Field(
+        ge=0,
+    )
+
+
+class SimulationRenameRequest(
+    CamelCaseModel
+):
+    name: str = Field(
+        min_length=2,
+        max_length=200,
+    )
+
+
+class SimulationRenameResponse(
+    CamelCaseModel
+):
+    id: str
+    name: str
+    updated_at: datetime

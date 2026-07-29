@@ -424,9 +424,15 @@ export default function SimulationResultScreen() {
               </strong>
             </div>
 
-            <small>
-              {result.id}
-            </small>
+            <div className="result-simulation-id">
+              <span>
+                SIMULATION ID
+              </span>
+
+              <strong>
+                {result.id}
+              </strong>
+            </div>
           </header>
 
           <div className="result-route-visual">
