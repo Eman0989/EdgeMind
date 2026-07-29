@@ -28,6 +28,7 @@
 ![Backend Tests](https://img.shields.io/badge/BACKEND_TESTS-13_PASSING-brightgreen?style=flat-square)
 ![E2E](https://img.shields.io/badge/PLAYWRIGHT-E2E_PASSING-brightgreen?style=flat-square&logo=playwright)
 ![Status](https://img.shields.io/badge/STATUS-DEPLOYMENT_READY-blueviolet?style=flat-square)
+[![EdgeMind CI](https://github.com/Eman0989/EdgeMind/actions/workflows/ci.yml/badge.svg)](https://github.com/Eman0989/EdgeMind/actions/workflows/ci.yml)
 
 </div>
 
