@@ -1,0 +1,58 @@
+services:
+  - type: web
+    name: edgemind-api-eman0989
+    runtime: python
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: APP_NAME
+        value: EdgeMind API
+      - key: APP_VERSION
+        value: 0.1.0
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: API_PREFIX
+        value: /api
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: edgemind-db-eman0989
+          property: connectionString
+      - key: CORS_ORIGINS
+        value: https://edgemind-web-eman0989.onrender.com
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "60"
+
+  - type: web
+    name: edgemind-web-eman0989
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    autoDeployTrigger: commit
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://edgemind-api-eman0989.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+databases:
+  - name: edgemind-db-eman0989
+    plan: free
+    region: frankfurt
+    databaseName: edgemind
+    user: edgemind
+    ipAllowList: []
