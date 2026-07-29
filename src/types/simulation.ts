@@ -64,11 +64,6 @@ export interface CompletedSimulation {
   completedAt: string;
 }
 
-export interface SavedSimulation
-  extends CompletedSimulation {
-  savedAt: string;
-}
-
 export interface RunSimulationRequest {
   config: SimulationConfig;
 }

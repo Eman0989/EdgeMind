@@ -1,6 +1,5 @@
 import {
   useMemo,
-  useState,
 } from "react";
 import {
   Link,
@@ -152,9 +151,6 @@ export default function SimulationResultScreen() {
     locationState?.simulation ??
     simulationService.getLast();
 
-  const [saveStatus, setSaveStatus] =
-    useState("");
-
   const comparison = useMemo(() => {
     if (!simulation) {
       return null;
@@ -214,26 +210,6 @@ export default function SimulationResultScreen() {
       originReduction,
     };
   }, [simulation]);
-
-  const saveSimulation = () => {
-    if (!simulation) {
-      return;
-    }
-
-    try {
-      simulationService.save(
-        simulation,
-      );
-
-      setSaveStatus(
-        "Result saved in this browser.",
-      );
-    } catch {
-      setSaveStatus(
-        "The browser could not save this result.",
-      );
-    }
-  };
 
   if (
     !simulation ||
@@ -332,19 +308,15 @@ export default function SimulationResultScreen() {
           <button
             className="result-green-button"
             type="button"
-            onClick={saveSimulation}
+            onClick={() => {
+              navigate("/simulations");
+            }}
           >
-            Save result
+            View saved runs
             <span>↗</span>
           </button>
         </div>
       </header>
-
-      {saveStatus && (
-        <p className="result-save-status">
-          {saveStatus}
-        </p>
-      )}
 
       <div className="result-summary-grid">
         <article>

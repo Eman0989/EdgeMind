@@ -10,7 +10,6 @@ import type {
   OriginRegion,
   RunSimulationRequest,
   RunSimulationResponse,
-  SavedSimulation,
   SimulationRenameResponse,
   SimulationListResponse,
   SimulationConfig,
@@ -22,10 +21,6 @@ import type {
 
 const LAST_SIMULATION_KEY =
   "edgemind_last_simulation_v1";
-
-const SAVED_SIMULATIONS_KEY =
-  "edgemind_saved_simulations_v1";
-
 
 const routes: Record<
   AudienceRegion,
@@ -419,86 +414,6 @@ export async function runSimulation(
 }
 
 
-export function saveSimulation(
-  simulation: CompletedSimulation,
-) {
-  const current =
-    getSavedSimulations();
-
-  const saved: SavedSimulation = {
-    ...simulation,
-    savedAt:
-      new Date().toISOString(),
-  };
-
-  const next = [
-    saved,
-    ...current.filter(
-      (item) =>
-        item.result.id !==
-        simulation.result.id,
-    ),
-  ];
-
-  window.localStorage.setItem(
-    SAVED_SIMULATIONS_KEY,
-    JSON.stringify(next),
-  );
-
-  return saved;
-}
-
-
-export function getSavedSimulations():
-  SavedSimulation[] {
-  try {
-    const rawValue =
-      window.localStorage.getItem(
-        SAVED_SIMULATIONS_KEY,
-      );
-
-    if (!rawValue) {
-      return [];
-    }
-
-    const parsedValue: unknown =
-      JSON.parse(rawValue);
-
-    if (
-      !Array.isArray(
-        parsedValue,
-      )
-    ) {
-      return [];
-    }
-
-    return parsedValue
-      .filter(
-        isCompletedSimulation,
-      )
-      .map(
-        (item) => ({
-          ...item,
-
-          savedAt:
-            typeof (
-              item as Partial<
-                SavedSimulation
-              >
-            ).savedAt ===
-            "string"
-              ? (
-                  item as SavedSimulation
-                ).savedAt
-              : item.completedAt,
-        }),
-      );
-  } catch {
-    return [];
-  }
-}
-
-
 export function listSimulations(
   token: string,
 ) {
@@ -575,12 +490,6 @@ export const simulationService = {
 
   getLast:
     getLastSimulation,
-
-  save:
-    saveSimulation,
-
-  getSaved:
-    getSavedSimulations,
 
   list:
     listSimulations,
