@@ -1,20 +1,32 @@
 import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
   Link,
 } from "react-router-dom";
+
+import {
+  useAuth,
+} from "../components/auth/AuthContext";
+
 import DashboardLayout from "../components/dashboard/DashboardLayout";
 import LiveNetworkDashboard from "../components/dashboard/LiveNetworkDashboard";
 
-interface OverviewMetric {
-  label: string;
-  value: string;
-  change: string;
-  detail: string;
-  tone:
-    | "cyan"
-    | "violet"
-    | "green"
-    | "orange";
-}
+import {
+  dashboardService,
+} from "../services/dashboardService";
+
+import type {
+  DashboardActivity,
+  DashboardEdgeNode,
+  DashboardMetric,
+  DashboardSnapshot,
+} from "../types/dashboard";
+
 
 interface RecentSimulation {
   id: string;
@@ -22,75 +34,369 @@ interface RecentSimulation {
   route: string;
   latency: string;
   cacheHit: string;
-  status:
-    | "Completed"
-    | "Draft";
+  status: "Completed";
   time: string;
 }
 
-const overviewMetrics: OverviewMetric[] = [
-  {
-    label: "TOTAL REQUESTS",
-    value: "18.4K",
-    change: "+8.2%",
-    detail: "Across active simulations",
-    tone: "cyan",
-  },
-  {
-    label: "AVERAGE LATENCY",
-    value: "12 ms",
-    change: "-6 ms",
-    detail: "Against origin delivery",
-    tone: "violet",
-  },
-  {
-    label: "CACHE HIT RATE",
-    value: "94.8%",
-    change: "+1.4%",
-    detail: "Global network average",
-    tone: "green",
-  },
-  {
-    label: "ACTIVE EDGE NODES",
-    value: "33",
-    change: "100%",
-    detail: "All nodes operational",
-    tone: "orange",
-  },
-];
 
-const recentSimulations:
-  RecentSimulation[] = [
-    {
-      id: "SIM-042",
-      name: "European SaaS Traffic",
-      route: "WAW → FRA → LON",
-      latency: "12 ms",
-      cacheHit: "96.1%",
-      status: "Completed",
-      time: "12 minutes ago",
+function formatRequestRate(
+  value: number,
+) {
+  if (value >= 1000) {
+    return `${(
+      value / 1000
+    ).toFixed(1)}K`;
+  }
+
+  return value.toLocaleString();
+}
+
+
+function formatMetricValue(
+  metric: DashboardMetric,
+  snapshot: DashboardSnapshot,
+) {
+  switch (metric.key) {
+    case "requests":
+      return formatRequestRate(
+        metric.value,
+      );
+
+    case "latency":
+      return `${Math.round(
+        metric.value,
+      )} ms`;
+
+    case "cache":
+      return `${metric.value.toFixed(
+        1,
+      )}%`;
+
+    case "nodes":
+      return (
+        `${snapshot.healthyNodes}` +
+        ` / ${snapshot.totalNodes}`
+      );
+
+    default:
+      return `${metric.value} ${metric.unit}`;
+  }
+}
+
+
+function formatMetricChange(
+  metric: DashboardMetric,
+) {
+  if (metric.changePercent === 0) {
+    return "0.0%";
+  }
+
+  const prefix =
+    metric.changePercent > 0
+      ? "+"
+      : "";
+
+  return (
+    `${prefix}` +
+    `${metric.changePercent.toFixed(
+      1,
+    )}%`
+  );
+}
+
+
+function formatRelativeTime(
+  dateValue: string,
+) {
+  const timestamp =
+    new Date(dateValue).getTime();
+
+  if (Number.isNaN(timestamp)) {
+    return "Recently";
+  }
+
+  const seconds = Math.max(
+    0,
+    Math.round(
+      (
+        Date.now() -
+        timestamp
+      ) / 1000,
+    ),
+  );
+
+  if (seconds < 60) {
+    return "Just now";
+  }
+
+  const minutes = Math.floor(
+    seconds / 60,
+  );
+
+  if (minutes < 60) {
+    return `${minutes} min ago`;
+  }
+
+  const hours = Math.floor(
+    minutes / 60,
+  );
+
+  if (hours < 24) {
+    return `${hours} hr ago`;
+  }
+
+  const days = Math.floor(
+    hours / 24,
+  );
+
+  return `${days} day${
+    days === 1 ? "" : "s"
+  } ago`;
+}
+
+
+function createSimulationId(
+  activity: DashboardActivity,
+) {
+  const numberValue = Number(
+    activity.id.replace(
+      "simulation-",
+      "",
+    ),
+  );
+
+  if (
+    Number.isFinite(numberValue)
+  ) {
+    return `SIM-${String(
+      numberValue,
+    ).padStart(6, "0")}`;
+  }
+
+  return activity.id.toUpperCase();
+}
+
+
+function createRecentSimulations(
+  snapshot: DashboardSnapshot,
+): RecentSimulation[] {
+  return snapshot.activity.map(
+    (activity, index) => {
+      const [
+        nameValue,
+        routeValue,
+      ] = activity.detail.split(
+        " · ",
+      );
+
+      return {
+        id:
+          createSimulationId(
+            activity,
+          ),
+        name:
+          nameValue ||
+          "CDN simulation",
+        route:
+          routeValue ||
+          snapshot.routeDecision
+            .selectedRoute
+            .join(" → "),
+        latency:
+          index === 0
+            ? `${snapshot.globalLatencyMs} ms`
+            : "—",
+        cacheHit:
+          index === 0
+            ? `${snapshot.cacheHitRate.toFixed(
+                1,
+              )}%`
+            : "—",
+        status: "Completed",
+        time:
+          formatRelativeTime(
+            activity.occurredAt,
+          ),
+      };
     },
-    {
-      id: "SIM-041",
-      name: "Global Media Delivery",
-      route: "SIN → HKG → SFO",
-      latency: "31 ms",
-      cacheHit: "91.4%",
-      status: "Completed",
-      time: "1 hour ago",
-    },
-    {
-      id: "SIM-040",
-      name: "Black Friday Load Test",
-      route: "NYC → IAD → DFW",
-      latency: "18 ms",
-      cacheHit: "89.7%",
-      status: "Draft",
-      time: "Yesterday",
-    },
-  ];
+  );
+}
+
+
+function findNode(
+  nodes: DashboardEdgeNode[],
+  code: string,
+) {
+  return nodes.find(
+    (node) =>
+      node.code === code,
+  );
+}
+
+
+function nodeLatency(
+  nodes: DashboardEdgeNode[],
+  code: string,
+) {
+  const node = findNode(
+    nodes,
+    code,
+  );
+
+  return node
+    ? `${node.latencyMs} ms`
+    : "—";
+}
+
 
 export default function DashboardPage() {
+  const {
+    token,
+    user,
+  } = useAuth();
+
+  const [
+    snapshot,
+    setSnapshot,
+  ] = useState<
+    DashboardSnapshot | null
+  >(null);
+
+  const [
+    isLoading,
+    setIsLoading,
+  ] = useState(true);
+
+  const [
+    error,
+    setError,
+  ] = useState("");
+
+  const loadDashboard =
+    useCallback(async () => {
+      if (!token) {
+        setError(
+          "Your authenticated session is unavailable.",
+        );
+
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setError("");
+
+      try {
+        const nextSnapshot =
+          await dashboardService
+            .getSnapshot(token);
+
+        setSnapshot(
+          nextSnapshot,
+        );
+      } catch (requestError) {
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : (
+                "Dashboard data could " +
+                "not be loaded."
+              ),
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    }, [token]);
+
+  useEffect(() => {
+    void loadDashboard();
+  }, [loadDashboard]);
+
+  const recentSimulations =
+    useMemo(
+      () =>
+        snapshot
+          ? createRecentSimulations(
+              snapshot,
+            )
+          : [],
+      [snapshot],
+    );
+
+  if (
+    isLoading ||
+    !snapshot
+  ) {
+    return (
+      <DashboardLayout>
+        <section className="dashboard-overview">
+          <header className="dashboard-overview-heading">
+            <div>
+              <span>
+                NETWORK OVERVIEW
+              </span>
+
+              <h1>
+                {error
+                  ? "Dashboard unavailable."
+                  : "Loading your network."}
+              </h1>
+
+              <p>
+                {error
+                  ? error
+                  : (
+                      "Retrieving metrics, " +
+                      "routes, and node health."
+                    )}
+              </p>
+            </div>
+
+            {error && (
+              <button
+                className="dashboard-primary-action"
+                type="button"
+                onClick={() => {
+                  void loadDashboard();
+                }}
+              >
+                Try again
+                <span>↻</span>
+              </button>
+            )}
+          </header>
+        </section>
+      </DashboardLayout>
+    );
+  }
+
+  const selectedRoute =
+    snapshot.routeDecision
+      .selectedRoute;
+
+  const selectedCodes =
+    new Set(selectedRoute);
+
+  const healthScore =
+    snapshot.totalNodes > 0
+      ? Math.round(
+          (
+            snapshot.healthyNodes /
+            snapshot.totalNodes
+          ) * 100,
+        )
+      : 0;
+
+  const edgeAvailability =
+    snapshot.totalNodes > 0
+      ? (
+          (
+            snapshot.healthyNodes /
+            snapshot.totalNodes
+          ) * 100
+        ).toFixed(1)
+      : "0.0";
+
   return (
     <DashboardLayout>
       <section className="dashboard-overview">
@@ -101,13 +407,19 @@ export default function DashboardPage() {
             </span>
 
             <h1>
-              Good to see you.
+              Good to see you
+              {user?.name
+                ? `, ${user.name.split(
+                    " ",
+                  )[0]}`
+                : ""}
+              .
             </h1>
 
             <p>
-              Your edge network is healthy.
-              Review performance or begin a
-              new CDN simulation.
+              Your dashboard is connected
+              to the EdgeMind API and
+              SQLite database.
             </p>
           </div>
 
@@ -116,16 +428,15 @@ export default function DashboardPage() {
             to="/simulator"
           >
             New simulation
-
             <span>↗</span>
           </Link>
         </header>
 
         <div className="dashboard-metric-grid">
-          {overviewMetrics.map(
+          {snapshot.metrics.map(
             (metric) => (
               <article
-                key={metric.label}
+                key={metric.key}
                 className={[
                   "dashboard-metric-card",
                   `is-${metric.tone}`,
@@ -133,7 +444,7 @@ export default function DashboardPage() {
               >
                 <div className="dashboard-metric-card-top">
                   <span>
-                    {metric.label}
+                    {metric.label.toUpperCase()}
                   </span>
 
                   <i />
@@ -141,11 +452,16 @@ export default function DashboardPage() {
 
                 <div className="dashboard-metric-value">
                   <strong>
-                    {metric.value}
+                    {formatMetricValue(
+                      metric,
+                      snapshot,
+                    )}
                   </strong>
 
                   <span>
-                    {metric.change}
+                    {formatMetricChange(
+                      metric,
+                    )}
                   </span>
                 </div>
 
@@ -186,7 +502,7 @@ export default function DashboardPage() {
 
               <small>
                 <i />
-                REAL-TIME
+                DATABASE CONNECTED
               </small>
             </header>
 
@@ -208,15 +524,17 @@ export default function DashboardPage() {
                   >
                     <stop
                       offset="0%"
-                      stopColor="#7c6fff"
+                      stopColor="#16d98b"
                     />
+
                     <stop
                       offset="52%"
-                      stopColor="#2ee6d6"
+                      stopColor="#55ffb5"
                     />
+
                     <stop
                       offset="100%"
-                      stopColor="#9ffcf3"
+                      stopColor="#d5ffe9"
                     />
                   </linearGradient>
                 </defs>
@@ -232,53 +550,98 @@ export default function DashboardPage() {
                 />
               </svg>
 
-              <div className="dashboard-map-node node-waw">
+              <div
+                className={[
+                  "dashboard-map-node",
+                  "node-waw",
+                  selectedCodes.has("WAW")
+                    ? "is-selected"
+                    : "",
+                ].join(" ")}
+              >
                 <span />
-                <strong>
-                  WAW
-                </strong>
+                <strong>WAW</strong>
                 <small>
-                  7 ms
+                  {nodeLatency(
+                    snapshot.nodes,
+                    "WAW",
+                  )}
                 </small>
               </div>
 
-              <div className="dashboard-map-node node-fra is-selected">
+              <div
+                className={[
+                  "dashboard-map-node",
+                  "node-fra",
+                  selectedCodes.has("FRA")
+                    ? "is-selected"
+                    : "",
+                ].join(" ")}
+              >
                 <span />
-                <strong>
-                  FRA
-                </strong>
+                <strong>FRA</strong>
                 <small>
-                  9 ms
+                  {nodeLatency(
+                    snapshot.nodes,
+                    "FRA",
+                  )}
                 </small>
               </div>
 
-              <div className="dashboard-map-node node-lon is-selected">
+              <div
+                className={[
+                  "dashboard-map-node",
+                  "node-lon",
+                  selectedCodes.has("LON")
+                    ? "is-selected"
+                    : "",
+                ].join(" ")}
+              >
                 <span />
-                <strong>
-                  LON
-                </strong>
+                <strong>LON</strong>
                 <small>
-                  12 ms
+                  {nodeLatency(
+                    snapshot.nodes,
+                    "LON",
+                  )}
                 </small>
               </div>
 
-              <div className="dashboard-map-node node-nyc">
+              <div
+                className={[
+                  "dashboard-map-node",
+                  "node-nyc",
+                  selectedCodes.has("NYC")
+                    ? "is-selected"
+                    : "",
+                ].join(" ")}
+              >
                 <span />
-                <strong>
-                  NYC
-                </strong>
+                <strong>NYC</strong>
                 <small>
-                  41 ms
+                  {nodeLatency(
+                    snapshot.nodes,
+                    "NYC",
+                  )}
                 </small>
               </div>
 
-              <div className="dashboard-map-node node-sin">
+              <div
+                className={[
+                  "dashboard-map-node",
+                  "node-sin",
+                  selectedCodes.has("SIN")
+                    ? "is-selected"
+                    : "",
+                ].join(" ")}
+              >
                 <span />
-                <strong>
-                  SIN
-                </strong>
+                <strong>SIN</strong>
                 <small>
-                  86 ms
+                  {nodeLatency(
+                    snapshot.nodes,
+                    "SIN",
+                  )}
                 </small>
               </div>
 
@@ -288,11 +651,20 @@ export default function DashboardPage() {
                 </span>
 
                 <strong>
-                  WAW → FRA → LON
+                  {selectedRoute.length
+                    ? selectedRoute.join(
+                        " → ",
+                      )
+                    : "No route yet"}
                 </strong>
 
                 <small>
-                  96% routing confidence
+                  {
+                    snapshot
+                      .routeDecision
+                      .confidence
+                  }
+                  % routing confidence
                 </small>
               </div>
             </div>
@@ -305,14 +677,16 @@ export default function DashboardPage() {
               </span>
 
               <strong>
-                Operational
+                {healthScore >= 90
+                  ? "Operational"
+                  : "Needs attention"}
               </strong>
             </header>
 
             <div className="dashboard-health-score">
               <div>
                 <strong>
-                  98
+                  {healthScore}
                 </strong>
 
                 <span>
@@ -321,7 +695,9 @@ export default function DashboardPage() {
               </div>
 
               <p>
-                Excellent network health
+                {healthScore >= 90
+                  ? "Excellent network health"
+                  : "Review node health"}
               </p>
             </div>
 
@@ -332,7 +708,7 @@ export default function DashboardPage() {
                 </span>
 
                 <strong>
-                  100%
+                  {edgeAvailability}%
                 </strong>
               </article>
 
@@ -342,7 +718,11 @@ export default function DashboardPage() {
                 </span>
 
                 <strong>
-                  99.9%
+                  {
+                    snapshot
+                      .originHealthPercent
+                  }
+                  %
                 </strong>
               </article>
 
@@ -352,7 +732,12 @@ export default function DashboardPage() {
                 </span>
 
                 <strong>
-                  96%
+                  {
+                    snapshot
+                      .routeDecision
+                      .confidence
+                  }
+                  %
                 </strong>
               </article>
 
@@ -362,7 +747,12 @@ export default function DashboardPage() {
                 </span>
 
                 <strong>
-                  94.8%
+                  {
+                    snapshot
+                      .cacheHitRate
+                      .toFixed(1)
+                  }
+                  %
                 </strong>
               </article>
             </div>
@@ -396,83 +786,78 @@ export default function DashboardPage() {
 
           <div className="dashboard-simulation-table">
             <div className="dashboard-simulation-row is-heading">
-              <span>
-                SIMULATION
-              </span>
-
-              <span>
-                ROUTE
-              </span>
-
-              <span>
-                LATENCY
-              </span>
-
-              <span>
-                CACHE HIT
-              </span>
-
-              <span>
-                STATUS
-              </span>
-
-              <span>
-                UPDATED
-              </span>
+              <span>SIMULATION</span>
+              <span>ROUTE</span>
+              <span>LATENCY</span>
+              <span>CACHE HIT</span>
+              <span>STATUS</span>
+              <span>UPDATED</span>
             </div>
 
-            {recentSimulations.map(
-              (simulation) => (
-                <div
-                  key={simulation.id}
-                  className="dashboard-simulation-row"
-                >
-                  <span>
-                    <strong>
-                      {simulation.name}
-                    </strong>
+            {recentSimulations.length === 0 ? (
+              <div className="dashboard-simulation-row">
+                <span>
+                  <strong>
+                    No simulations yet
+                  </strong>
 
-                    <small>
-                      {simulation.id}
-                    </small>
-                  </span>
+                  <small>
+                    Run your first test
+                  </small>
+                </span>
 
-                  <span>
-                    {simulation.route}
-                  </span>
+                <span>—</span>
+                <span>—</span>
+                <span>—</span>
+                <span>—</span>
+                <span>—</span>
+              </div>
+            ) : (
+              recentSimulations.map(
+                (simulation) => (
+                  <div
+                    key={simulation.id}
+                    className="dashboard-simulation-row"
+                  >
+                    <span>
+                      <strong>
+                        {simulation.name}
+                      </strong>
 
-                  <span>
-                    {simulation.latency}
-                  </span>
+                      <small>
+                        {simulation.id}
+                      </small>
+                    </span>
 
-                  <span>
-                    {simulation.cacheHit}
-                  </span>
+                    <span>
+                      {simulation.route}
+                    </span>
 
-                  <span>
-                    <i
-                      className={
-                        simulation.status ===
-                        "Completed"
-                          ? "is-completed"
-                          : "is-draft"
-                      }
-                    />
+                    <span>
+                      {simulation.latency}
+                    </span>
 
-                    {simulation.status}
-                  </span>
+                    <span>
+                      {simulation.cacheHit}
+                    </span>
 
-                  <span>
-                    {simulation.time}
-                  </span>
-                </div>
-              ),
+                    <span>
+                      <i className="is-completed" />
+                      {simulation.status}
+                    </span>
+
+                    <span>
+                      {simulation.time}
+                    </span>
+                  </div>
+                ),
+              )
             )}
           </div>
         </section>
 
         <section className="dashboard-live-network-section">
-          <LiveNetworkDashboard />
+          <LiveNetworkDashboard snapshot={snapshot} />
         </section>
       </section>
     </DashboardLayout>

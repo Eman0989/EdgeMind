@@ -20,6 +20,7 @@ interface RequestOptions
     "body"
   > {
   body?: unknown;
+  token?: string | null;
 }
 
 export class ApiClientError
@@ -35,6 +36,7 @@ export class ApiClientError
     payload: ApiErrorPayload,
   ) {
     super(payload.message);
+
     this.name = "ApiClientError";
     this.status = payload.status;
     this.code = payload.code;
@@ -58,7 +60,66 @@ async function parseResponseBody(
     return null;
   }
 
-  return response.json() as Promise<unknown>;
+  try {
+    return await response.json() as unknown;
+  } catch {
+    return null;
+  }
+}
+
+function getFastApiErrorMessage(
+  payload: unknown,
+  fallback: string,
+) {
+  if (
+    !payload ||
+    typeof payload !== "object"
+  ) {
+    return fallback;
+  }
+
+  const candidate = payload as {
+    detail?: unknown;
+    message?: unknown;
+  };
+
+  if (
+    typeof candidate.detail ===
+    "string"
+  ) {
+    return candidate.detail;
+  }
+
+  if (
+    Array.isArray(candidate.detail)
+  ) {
+    const firstError =
+      candidate.detail[0];
+
+    if (
+      firstError &&
+      typeof firstError === "object"
+    ) {
+      const message = (
+        firstError as {
+          msg?: unknown;
+        }
+      ).msg;
+
+      if (typeof message === "string") {
+        return message;
+      }
+    }
+  }
+
+  if (
+    typeof candidate.message ===
+    "string"
+  ) {
+    return candidate.message;
+  }
+
+  return fallback;
 }
 
 async function request<T>(
@@ -68,29 +129,54 @@ async function request<T>(
   const {
     body,
     headers,
+    token,
     ...requestInit
   } = options;
 
-  const response = await fetch(
-    `${API_BASE_URL}${path}`,
-    {
-      ...requestInit,
-      headers: {
-        Accept: "application/json",
-        ...(body !== undefined
-          ? {
-              "Content-Type":
-                "application/json",
-            }
-          : {}),
-        ...headers,
-      },
-      body:
-        body === undefined
-          ? undefined
-          : JSON.stringify(body),
-    },
+  const requestHeaders =
+    new Headers(headers);
+
+  requestHeaders.set(
+    "Accept",
+    "application/json",
   );
+
+  if (body !== undefined) {
+    requestHeaders.set(
+      "Content-Type",
+      "application/json",
+    );
+  }
+
+  if (token) {
+    requestHeaders.set(
+      "Authorization",
+      `Bearer ${token}`,
+    );
+  }
+
+  let response: Response;
+
+  try {
+    response = await fetch(
+      `${API_BASE_URL}${path}`,
+      {
+        ...requestInit,
+        headers: requestHeaders,
+        body:
+          body === undefined
+            ? undefined
+            : JSON.stringify(body),
+      },
+    );
+  } catch {
+    throw new ApiClientError({
+      status: 0,
+      code: "network_error",
+      message:
+        "Could not connect to the EdgeMind server.",
+    });
+  }
 
   const payload =
     await parseResponseBody(
@@ -98,26 +184,14 @@ async function request<T>(
     );
 
   if (!response.ok) {
-    const errorPayload =
-      payload &&
-      typeof payload === "object"
-        ? (
-            payload as Partial<
-              ApiErrorPayload
-            >
-          )
-        : {};
-
     throw new ApiClientError({
       status: response.status,
-      code:
-        errorPayload.code ??
-        "request_failed",
+      code: "request_failed",
       message:
-        errorPayload.message ??
-        `Request failed with status ${response.status}.`,
-      details:
-        errorPayload.details,
+        getFastApiErrorMessage(
+          payload,
+          `Request failed with status ${response.status}.`,
+        ),
     });
   }
 

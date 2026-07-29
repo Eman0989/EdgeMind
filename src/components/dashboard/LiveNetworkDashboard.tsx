@@ -1,90 +1,103 @@
 import {
-  useEffect,
   useMemo,
   useState,
 } from "react";
-import { Link } from "react-router-dom";
+
+import {
+  Link,
+} from "react-router-dom";
+
+import type {
+  ActivitySeverity,
+  DashboardEdgeNode,
+  DashboardSnapshot,
+} from "../../types/dashboard";
+
 import "./LiveNetworkDashboard.css";
 
-type Region =
-  | "All"
-  | "Europe"
-  | "Americas"
-  | "Asia Pacific";
+
+interface LiveNetworkDashboardProps {
+  snapshot: DashboardSnapshot;
+}
+
 
 type NodeState =
   | "healthy"
   | "watch"
   | "selected";
 
-interface EdgeNode {
-  code: string;
-  city: string;
-  region: Exclude<Region, "All">;
-  latency: number;
-  load: number;
-  cacheHit: number;
-  requests: string;
-  state: NodeState;
-  x: number;
-  y: number;
+
+function clamp(
+  value: number,
+  minimum: number,
+  maximum: number,
+) {
+  return Math.min(
+    maximum,
+    Math.max(
+      minimum,
+      value,
+    ),
+  );
 }
 
-interface ActivityItem {
-  id: number;
-  time: string;
-  tone:
-    | "route"
-    | "cache"
-    | "warning"
-    | "health";
-  title: string;
-  detail: string;
+
+function formatRequestRate(
+  value: number,
+) {
+  if (value >= 1000) {
+    return `${(
+      value / 1000
+    ).toFixed(1)}K`;
+  }
+
+  return value.toLocaleString();
 }
 
-const nodes: EdgeNode[] = [
-  { code: "WAW", city: "Warsaw", region: "Europe", latency: 7, load: 51, cacheHit: 96.8, requests: "2.8K/s", state: "healthy", x: 50, y: 35 },
-  { code: "FRA", city: "Frankfurt", region: "Europe", latency: 9, load: 68, cacheHit: 95.4, requests: "3.7K/s", state: "selected", x: 44, y: 41 },
-  { code: "LON", city: "London", region: "Europe", latency: 12, load: 61, cacheHit: 94.9, requests: "3.1K/s", state: "selected", x: 38, y: 35 },
-  { code: "NYC", city: "New York", region: "Americas", latency: 41, load: 73, cacheHit: 91.2, requests: "4.4K/s", state: "watch", x: 23, y: 44 },
-  { code: "SFO", city: "San Francisco", region: "Americas", latency: 56, load: 47, cacheHit: 92.7, requests: "2.6K/s", state: "healthy", x: 11, y: 47 },
-  { code: "GRU", city: "São Paulo", region: "Americas", latency: 72, load: 58, cacheHit: 89.8, requests: "1.9K/s", state: "healthy", x: 30, y: 75 },
-  { code: "SIN", city: "Singapore", region: "Asia Pacific", latency: 86, load: 64, cacheHit: 93.6, requests: "2.4K/s", state: "healthy", x: 79, y: 67 },
-  { code: "TYO", city: "Tokyo", region: "Asia Pacific", latency: 78, load: 69, cacheHit: 94.1, requests: "3.0K/s", state: "healthy", x: 90, y: 43 },
-  { code: "SYD", city: "Sydney", region: "Asia Pacific", latency: 92, load: 39, cacheHit: 90.5, requests: "1.3K/s", state: "healthy", x: 91, y: 79 },
-];
 
-const regions: Region[] = [
-  "All",
-  "Europe",
-  "Americas",
-  "Asia Pacific",
-];
+function formatNodeRequests(
+  value: number,
+) {
+  if (value >= 1000) {
+    return `${(
+      value / 1000
+    ).toFixed(1)}K/s`;
+  }
 
-const activityTemplates = [
-  {
-    tone: "route" as const,
-    title: "Route automatically optimized",
-    detail: "WAW → FRA → LON selected",
-  },
-  {
-    tone: "cache" as const,
-    title: "Cache hit returned",
-    detail: "38 ms origin trip avoided",
-  },
-  {
-    tone: "warning" as const,
-    title: "New York load increased",
-    detail: "Fallback capacity remains healthy",
-  },
-  {
-    tone: "health" as const,
-    title: "Node health check passed",
-    detail: "33 of 33 nodes operational",
-  },
-];
+  return `${value}/s`;
+}
 
-function now() {
+
+function formatBandwidth(
+  gigabytes: number,
+) {
+  if (gigabytes >= 1000) {
+    return `${(
+      gigabytes / 1000
+    ).toFixed(1)} TB`;
+  }
+
+  return `${gigabytes.toFixed(
+    1,
+  )} GB`;
+}
+
+
+function formatActivityTime(
+  dateValue: string,
+) {
+  const date = new Date(
+    dateValue,
+  );
+
+  if (
+    Number.isNaN(
+      date.getTime(),
+    )
+  ) {
+    return "--:--:--";
+  }
+
   return new Intl.DateTimeFormat(
     "en-GB",
     {
@@ -93,149 +106,227 @@ function now() {
       second: "2-digit",
       hour12: false,
     },
-  ).format(new Date());
+  ).format(date);
 }
 
-function clamp(
-  value: number,
-  min: number,
-  max: number,
+
+function getActivityTone(
+  severity: ActivitySeverity,
 ) {
-  return Math.min(
-    max,
-    Math.max(min, value),
-  );
+  switch (severity) {
+    case "success":
+      return "route";
+
+    case "warning":
+    case "error":
+      return "warning";
+
+    default:
+      return "health";
+  }
 }
 
-export default function LiveNetworkDashboard() {
-  const [region, setRegion] =
-    useState<Region>("All");
 
-  const [selectedCode, setSelectedCode] =
-    useState("FRA");
+function getNodeState(
+  node: DashboardEdgeNode,
+  selectedCodes: Set<string>,
+): NodeState {
+  if (
+    selectedCodes.has(
+      node.code,
+    )
+  ) {
+    return "selected";
+  }
 
-  const [paused, setPaused] =
-    useState(false);
+  if (
+    node.status === "watch" ||
+    node.status === "offline"
+  ) {
+    return "watch";
+  }
 
-  const [requests, setRequests] =
-    useState(18.4);
+  return "healthy";
+}
 
-  const [latency, setLatency] =
-    useState(12);
 
-  const [cacheHit, setCacheHit] =
-    useState(94.8);
+const NODE_DISPLAY_OFFSETS: Record<
+  string,
+  {
+    x: number;
+    y: number;
+  }
+> = {
+  LON: {
+    x: -5,
+    y: 2,
+  },
+  AMS: {
+    x: -1,
+    y: -6,
+  },
+  FRA: {
+    x: 2,
+    y: 6,
+  },
+  WAW: {
+    x: 6,
+    y: -1,
+  },
+  NYC: {
+    x: 3,
+    y: -4,
+  },
+  IAD: {
+    x: -3,
+    y: 4,
+  },
+};
 
-  const [activity, setActivity] =
-    useState<ActivityItem[]>([
-      {
-        id: 1,
-        time: now(),
-        ...activityTemplates[0],
-      },
-      {
-        id: 2,
-        time: now(),
-        ...activityTemplates[1],
-      },
-      {
-        id: 3,
-        time: now(),
-        ...activityTemplates[3],
-      },
-    ]);
 
-  const visibleNodes = useMemo(
-    () =>
-      region === "All"
-        ? nodes
-        : nodes.filter(
-            (node) =>
-              node.region === region,
-          ),
-    [region],
+function getNodePosition(
+  node: DashboardEdgeNode,
+) {
+  const geographicX =
+    (
+      (
+        node.longitude +
+        180
+      ) /
+      360
+    ) *
+    100;
+
+  const geographicY =
+    (
+      (
+        90 -
+        node.latitude
+      ) /
+      180
+    ) *
+    100;
+
+  const offset =
+    NODE_DISPLAY_OFFSETS[
+      node.code
+    ] ?? {
+      x: 0,
+      y: 0,
+    };
+
+  return {
+    x: clamp(
+      geographicX +
+        offset.x,
+      6,
+      94,
+    ),
+    y: clamp(
+      geographicY +
+        offset.y,
+      14,
+      84,
+    ),
+  };
+}
+
+
+export default function LiveNetworkDashboard({
+  snapshot,
+}: LiveNetworkDashboardProps) {
+  const [
+    region,
+    setRegion,
+  ] = useState("All");
+
+  const [
+    selectedCode,
+    setSelectedCode,
+  ] = useState(
+    snapshot.routeDecision
+      .selectedRoute[0] ??
+      snapshot.nodes[0]?.code ??
+      "",
   );
+
+  const [
+    paused,
+    setPaused,
+  ] = useState(false);
+
+  const selectedCodes =
+    useMemo(
+      () =>
+        new Set(
+          snapshot.routeDecision
+            .selectedRoute,
+        ),
+      [
+        snapshot
+          .routeDecision
+          .selectedRoute,
+      ],
+    );
+
+  const regions =
+    useMemo(
+      () => [
+        "All",
+        ...Array.from(
+          new Set(
+            snapshot.nodes.map(
+              (node) =>
+                node.region,
+            ),
+          ),
+        ),
+      ],
+      [snapshot.nodes],
+    );
+
+  const visibleNodes =
+    useMemo(
+      () =>
+        region === "All"
+          ? snapshot.nodes
+          : snapshot.nodes.filter(
+              (node) =>
+                node.region === region,
+            ),
+      [
+        region,
+        snapshot.nodes,
+      ],
+    );
 
   const selectedNode =
-    nodes.find(
+    snapshot.nodes.find(
       (node) =>
-        node.code === selectedCode,
-    ) ?? nodes[1];
+        node.code ===
+        selectedCode,
+    ) ??
+    snapshot.nodes[0] ??
+    null;
 
-  useEffect(() => {
-    if (paused) {
-      return;
-    }
+  const selectedRoute =
+    snapshot.routeDecision
+      .selectedRoute.join(
+        " → ",
+      );
 
-    const intervalId =
-      window.setInterval(() => {
-        setRequests(
-          (value) =>
-            Number(
-              clamp(
-                value +
-                  (Math.random() -
-                    0.45) *
-                    0.7,
-                16.8,
-                22.6,
-              ).toFixed(1),
-            ),
-        );
+  const alternativeRoute =
+    snapshot.routeDecision
+      .alternativeRoute.join(
+        " → ",
+      );
 
-        setLatency(
-          (value) =>
-            Math.round(
-              clamp(
-                value +
-                  (Math.random() >
-                  0.5
-                    ? 1
-                    : -1),
-                9,
-                19,
-              ),
-            ),
-        );
-
-        setCacheHit(
-          (value) =>
-            Number(
-              clamp(
-                value +
-                  (Math.random() -
-                    0.48) *
-                    0.35,
-                92.5,
-                97.2,
-              ).toFixed(1),
-            ),
-        );
-
-        const item =
-          activityTemplates[
-            Math.floor(
-              Math.random() *
-                activityTemplates.length,
-            )
-          ];
-
-        setActivity(
-          (current) => [
-            {
-              id: Date.now(),
-              time: now(),
-              ...item,
-            },
-            ...current,
-          ].slice(0, 5),
-        );
-      }, 2200);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [paused]);
+  const alternativeCacheRate =
+    Math.max(
+      0,
+      snapshot.cacheHitRate -
+        3,
+    );
 
   return (
     <section className="live-network">
@@ -250,9 +341,10 @@ export default function LiveNetworkDashboard() {
           </h1>
 
           <p>
-            Monitor simulated traffic,
-            latency, cache efficiency, node
-            health, and routing decisions.
+            Monitor traffic, latency,
+            cache efficiency, node health,
+            and routing decisions from the
+            EdgeMind API.
           </p>
         </div>
 
@@ -275,8 +367,8 @@ export default function LiveNetworkDashboard() {
             />
 
             {paused
-              ? "Resume live data"
-              : "Pause live data"}
+              ? "Resume animation"
+              : "Pause animation"}
           </button>
 
           <Link
@@ -291,20 +383,41 @@ export default function LiveNetworkDashboard() {
 
       <div className="live-metrics">
         <article>
-          <span>REQUEST RATE</span>
+          <span>
+            REQUEST RATE
+          </span>
+
           <strong>
-            {requests.toFixed(1)}K
+            {formatRequestRate(
+              snapshot
+                .requestRatePerSecond,
+            )}
           </strong>
+
           <small>
             requests per second
           </small>
+
           <div className="metric-bars">
-            {[42, 58, 47, 66, 61, 76, 69, 91].map(
-              (height, index) => (
+            {[
+              42,
+              58,
+              47,
+              66,
+              61,
+              76,
+              69,
+              91,
+            ].map(
+              (
+                height,
+                index,
+              ) => (
                 <i
                   key={index}
                   style={{
-                    height: `${height}%`,
+                    height:
+                      `${height}%`,
                   }}
                 />
               ),
@@ -313,45 +426,87 @@ export default function LiveNetworkDashboard() {
         </article>
 
         <article>
-          <span>GLOBAL LATENCY</span>
+          <span>
+            GLOBAL LATENCY
+          </span>
+
           <strong>
-            {latency} ms
+            {
+              snapshot
+                .globalLatencyMs
+            }{" "}
+            ms
           </strong>
+
           <small>
-            optimized route average
+            selected route latency
           </small>
+
           <div className="metric-line" />
         </article>
 
         <article>
-          <span>CACHE HIT RATE</span>
+          <span>
+            CACHE HIT RATE
+          </span>
+
           <strong>
-            {cacheHit.toFixed(1)}%
+            {
+              snapshot
+                .cacheHitRate
+                .toFixed(1)
+            }
+            %
           </strong>
+
           <small>
-            global cache efficiency
+            latest cache prediction
           </small>
+
           <div className="metric-progress">
             <i
               style={{
-                width: `${cacheHit}%`,
+                width:
+                  `${snapshot.cacheHitRate}%`,
               }}
             />
           </div>
         </article>
 
         <article>
-          <span>HEALTHY NODES</span>
-          <strong>33 / 33</strong>
+          <span>
+            HEALTHY NODES
+          </span>
+
+          <strong>
+            {snapshot.healthyNodes}
+            {" / "}
+            {snapshot.totalNodes}
+          </strong>
+
           <small>
-            all regions operational
+            active database nodes
           </small>
+
           <div className="metric-dots">
             {Array.from({
-              length: 12,
-            }).map((_, index) => (
-              <i key={index} />
-            ))}
+              length: Math.min(
+                snapshot.totalNodes,
+                24,
+              ),
+            }).map(
+              (_, index) => (
+                <i
+                  key={index}
+                  className={
+                    index >=
+                    snapshot.healthyNodes
+                      ? "is-watch"
+                      : ""
+                  }
+                />
+              ),
+            )}
           </div>
         </article>
       </div>
@@ -363,6 +518,7 @@ export default function LiveNetworkDashboard() {
               <span>
                 GLOBAL EDGE MAP
               </span>
+
               <strong>
                 Active network routes
               </strong>
@@ -370,9 +526,10 @@ export default function LiveNetworkDashboard() {
 
             <small>
               <i />
+
               {paused
                 ? "PAUSED"
-                : "LIVE"}
+                : "API CONNECTED"}
             </small>
           </header>
 
@@ -425,10 +582,12 @@ export default function LiveNetworkDashboard() {
                     offset="0%"
                     stopColor="#78f3c1"
                   />
+
                   <stop
                     offset="52%"
                     stopColor="#2ee6d6"
                   />
+
                   <stop
                     offset="100%"
                     stopColor="#b8ffe4"
@@ -466,85 +625,147 @@ export default function LiveNetworkDashboard() {
             </svg>
 
             {visibleNodes.map(
-              (node) => (
-                <button
-                  key={node.code}
-                  type="button"
-                  className={[
-                    "edge-node",
-                    `is-${node.state}`,
-                    selectedCode ===
-                    node.code
-                      ? "is-focused"
-                      : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  style={{
-                    left: `${node.x}%`,
-                    top: `${node.y}%`,
-                  }}
-                  onClick={() => {
-                    setSelectedCode(
-                      node.code,
-                    );
-                  }}
-                >
-                  <i />
-                  <strong>
-                    {node.code}
-                  </strong>
-                  <small>
-                    {node.latency} ms
-                  </small>
-                </button>
-              ),
+              (node) => {
+                const position =
+                  getNodePosition(
+                    node,
+                  );
+
+                const state =
+                  getNodeState(
+                    node,
+                    selectedCodes,
+                  );
+
+                return (
+                  <button
+                    key={node.id}
+                    type="button"
+                    className={[
+                      "edge-node",
+                      `is-${state}`,
+                      selectedCode ===
+                      node.code
+                        ? "is-focused"
+                        : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    style={{
+                      left:
+                        `${position.x}%`,
+                      top:
+                        `${position.y}%`,
+                    }}
+                    onClick={() => {
+                      setSelectedCode(
+                        node.code,
+                      );
+                    }}
+                  >
+                    <i />
+
+                    <strong>
+                      {node.code}
+                    </strong>
+
+                    <small>
+                      {node.latencyMs} ms
+                    </small>
+                  </button>
+                );
+              },
             )}
 
-            <div className="node-detail">
-              <header>
+            {selectedNode && (
+              <div className="node-detail">
+                <header>
+                  <div>
+                    <span>
+                      SELECTED NODE
+                    </span>
+
+                    <strong>
+                      {
+                        selectedNode
+                          .code
+                      }
+                      {" · "}
+                      {
+                        selectedNode
+                          .city
+                      }
+                    </strong>
+                  </div>
+
+                  <i
+                    className={
+                      `is-${getNodeState(
+                        selectedNode,
+                        selectedCodes,
+                      )}`
+                    }
+                  />
+                </header>
+
                 <div>
                   <span>
-                    SELECTED NODE
+                    <small>
+                      LATENCY
+                    </small>
+
+                    <strong>
+                      {
+                        selectedNode
+                          .latencyMs
+                      }{" "}
+                      ms
+                    </strong>
                   </span>
-                  <strong>
-                    {selectedNode.code} ·{" "}
-                    {selectedNode.city}
-                  </strong>
+
+                  <span>
+                    <small>
+                      LOAD
+                    </small>
+
+                    <strong>
+                      {
+                        selectedNode
+                          .loadPercent
+                      }
+                      %
+                    </strong>
+                  </span>
+
+                  <span>
+                    <small>
+                      CACHE HIT
+                    </small>
+
+                    <strong>
+                      {
+                        selectedNode
+                          .cacheHitRate
+                      }
+                      %
+                    </strong>
+                  </span>
+
+                  <span>
+                    <small>
+                      REQUESTS
+                    </small>
+
+                    <strong>
+                      {formatNodeRequests(
+                        selectedNode
+                          .requestsPerSecond,
+                      )}
+                    </strong>
+                  </span>
                 </div>
-
-                <i
-                  className={`is-${selectedNode.state}`}
-                />
-              </header>
-
-              <div>
-                <span>
-                  <small>LATENCY</small>
-                  <strong>
-                    {selectedNode.latency} ms
-                  </strong>
-                </span>
-                <span>
-                  <small>LOAD</small>
-                  <strong>
-                    {selectedNode.load}%
-                  </strong>
-                </span>
-                <span>
-                  <small>CACHE HIT</small>
-                  <strong>
-                    {selectedNode.cacheHit}%
-                  </strong>
-                </span>
-                <span>
-                  <small>REQUESTS</small>
-                  <strong>
-                    {selectedNode.requests}
-                  </strong>
-                </span>
               </div>
-            </div>
+            )}
           </div>
 
           <footer>
@@ -552,10 +773,12 @@ export default function LiveNetworkDashboard() {
               <i className="healthy" />
               Healthy
             </span>
+
             <span>
               <i className="selected" />
               Selected route
             </span>
+
             <span>
               <i className="watch" />
               Load watch
@@ -569,19 +792,28 @@ export default function LiveNetworkDashboard() {
               <span>
                 ROUTING DECISION
               </span>
+
               <strong>
                 Current best path
               </strong>
             </header>
 
             <div className="route-choice">
-              <span>SELECTED</span>
+              <span>
+                SELECTED
+              </span>
+
               <strong>
-                WAW → FRA → LON
+                {selectedRoute ||
+                  "No route selected"}
               </strong>
+
               <small>
-                Lowest predicted latency with
-                healthy fallback capacity.
+                {
+                  snapshot
+                    .routeDecision
+                    .reason
+                }
               </small>
             </div>
 
@@ -590,10 +822,24 @@ export default function LiveNetworkDashboard() {
                 <span>
                   MODEL CONFIDENCE
                 </span>
-                <strong>96%</strong>
+
+                <strong>
+                  {
+                    snapshot
+                      .routeDecision
+                      .confidence
+                  }
+                  %
+                </strong>
               </div>
+
               <div>
-                <i />
+                <i
+                  style={{
+                    width:
+                      `${snapshot.routeDecision.confidence}%`,
+                  }}
+                />
               </div>
             </div>
 
@@ -602,9 +848,23 @@ export default function LiveNetworkDashboard() {
                 <span>
                   SELECTED PATH
                 </span>
-                <strong>12 ms</strong>
+
+                <strong>
+                  {
+                    snapshot
+                      .routeDecision
+                      .selectedLatencyMs
+                  }{" "}
+                  ms
+                </strong>
+
                 <small>
-                  94.8% cache hit
+                  {
+                    snapshot
+                      .cacheHitRate
+                      .toFixed(1)
+                  }
+                  % cache hit
                 </small>
               </article>
 
@@ -612,12 +872,32 @@ export default function LiveNetworkDashboard() {
                 <span>
                   ALTERNATIVE
                 </span>
-                <strong>19 ms</strong>
+
+                <strong>
+                  {
+                    snapshot
+                      .routeDecision
+                      .alternativeLatencyMs
+                  }{" "}
+                  ms
+                </strong>
+
                 <small>
-                  92.1% cache hit
+                  {
+                    alternativeCacheRate
+                      .toFixed(1)
+                  }
+                  % cache hit
                 </small>
               </article>
             </div>
+
+            {alternativeRoute && (
+              <p>
+                Alternative route:{" "}
+                {alternativeRoute}
+              </p>
+            )}
 
             <Link
               className="edge-green-button is-full"
@@ -634,37 +914,72 @@ export default function LiveNetworkDashboard() {
                 <span>
                   ACTIVITY FEED
                 </span>
+
                 <strong>
                   Network events
                 </strong>
               </div>
+
               <small>
                 {paused
                   ? "PAUSED"
-                  : "LIVE"}
+                  : "DATABASE"}
               </small>
             </header>
 
             <div>
-              {activity.map(
-                (item) => (
-                  <article key={item.id}>
-                    <time>
-                      {item.time}
-                    </time>
-                    <i
-                      className={`is-${item.tone}`}
-                    />
-                    <div>
-                      <strong>
-                        {item.title}
-                      </strong>
-                      <small>
-                        {item.detail}
-                      </small>
-                    </div>
-                  </article>
-                ),
+              {snapshot.activity.length ===
+              0 ? (
+                <article>
+                  <time>
+                    --:--:--
+                  </time>
+
+                  <i className="is-health" />
+
+                  <div>
+                    <strong>
+                      No activity yet
+                    </strong>
+
+                    <small>
+                      Run a simulation to
+                      create an event.
+                    </small>
+                  </div>
+                </article>
+              ) : (
+                snapshot.activity.map(
+                  (item) => (
+                    <article
+                      key={item.id}
+                    >
+                      <time>
+                        {formatActivityTime(
+                          item.occurredAt,
+                        )}
+                      </time>
+
+                      <i
+                        className={
+                          `is-${getActivityTone(
+                            item.severity,
+                          )}`
+                        }
+                      />
+
+                      <div>
+                        <strong>
+                          {item.title}
+                        </strong>
+
+                        <small>
+                          {item.detail}
+                        </small>
+                      </div>
+                    </article>
+                  ),
+                )
               )}
             </div>
           </section>
@@ -673,29 +988,71 @@ export default function LiveNetworkDashboard() {
 
       <div className="live-bottom-grid">
         <article>
-          <span>ORIGIN HEALTH</span>
-          <strong>99.9%</strong>
+          <span>
+            ORIGIN HEALTH
+          </span>
+
+          <strong>
+            {
+              snapshot
+                .originHealthPercent
+            }
+            %
+          </strong>
+
           <small>
-            All services responding
+            Origin service availability
           </small>
         </article>
+
         <article>
-          <span>BANDWIDTH SAVED</span>
-          <strong>4.8 TB</strong>
+          <span>
+            BANDWIDTH SAVED
+          </span>
+
+          <strong>
+            {formatBandwidth(
+              snapshot
+                .bandwidthSavedGb,
+            )}
+          </strong>
+
           <small>
             Estimated through caching
           </small>
         </article>
+
         <article>
-          <span>ERROR RATE</span>
-          <strong>0.03%</strong>
+          <span>
+            ERROR RATE
+          </span>
+
+          <strong>
+            {
+              snapshot
+                .errorRatePercent
+            }
+            %
+          </strong>
+
           <small>
-            Below operational threshold
+            Current predicted error rate
           </small>
         </article>
+
         <article>
-          <span>FAILOVER TIME</span>
-          <strong>280 ms</strong>
+          <span>
+            FAILOVER TIME
+          </span>
+
+          <strong>
+            {
+              snapshot
+                .failoverTimeMs
+            }{" "}
+            ms
+          </strong>
+
           <small>
             Predicted recovery response
           </small>
