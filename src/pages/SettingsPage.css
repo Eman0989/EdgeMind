@@ -549,3 +549,188 @@
     width: 100%;
   }
 }
+
+
+/* Step 21: responsive Settings refinements */
+
+@media (max-width: 900px) {
+  .settings-page {
+    min-width: 0;
+  }
+
+  .settings-heading {
+    gap: 22px;
+  }
+
+  .settings-profile-card,
+  .settings-panel {
+    min-width: 0;
+  }
+
+  .settings-profile-card > p,
+  .settings-profile-card dd,
+  .settings-session-row strong,
+  .settings-session-row small {
+    overflow-wrap: anywhere;
+  }
+
+  .settings-panel > header > div:first-child {
+    min-width: 0;
+  }
+}
+
+
+@media (max-width: 650px) {
+  .settings-heading h1 {
+    font-size:
+      clamp(2rem, 10vw, 2.9rem);
+    line-height: 1.03;
+  }
+
+  .settings-heading p {
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+
+  .settings-grid {
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .settings-profile-card {
+    padding: 20px;
+  }
+
+  .settings-panel > header {
+    padding: 20px;
+  }
+
+  .settings-form {
+    padding: 20px;
+  }
+
+  .settings-form input {
+    min-height: 50px;
+    font-size: 16px;
+  }
+
+  .settings-primary-button,
+  .settings-secondary-button,
+  .settings-logout-button {
+    min-height: 46px;
+  }
+
+  .settings-session-row {
+    gap: 14px;
+  }
+
+  .settings-session-badge {
+    align-self: flex-start;
+  }
+
+  .settings-logout-button {
+    width:
+      calc(100% - 40px);
+    margin: 0 20px 20px;
+  }
+}
+
+
+@media (max-width: 520px) {
+  .settings-profile-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    text-align: center;
+  }
+
+  .settings-avatar {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto;
+  }
+
+  .settings-profile-card h2 {
+    margin-top: 16px;
+  }
+
+  .settings-profile-card > p {
+    width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .settings-profile-state {
+    margin: 12px auto 0;
+  }
+
+  .settings-profile-card dl {
+    width: 100%;
+    margin-top: 22px;
+    text-align: left;
+  }
+
+  .settings-panel > header {
+    padding: 17px;
+  }
+
+  .settings-panel > header h2 {
+    font-size: 18px;
+  }
+
+  .settings-panel > header p {
+    font-size: 11px;
+  }
+
+  .settings-form {
+    padding: 17px;
+  }
+
+  .settings-form label + label {
+    margin-top: 16px;
+  }
+
+  .settings-message {
+    align-items: flex-start;
+  }
+
+  .settings-form footer {
+    gap: 9px;
+    margin-top: 19px;
+    padding-top: 16px;
+  }
+
+  .settings-session-row {
+    padding: 17px;
+  }
+
+  .settings-session-row > div {
+    min-width: 0;
+    align-items: flex-start;
+  }
+
+  .settings-logout-button {
+    width:
+      calc(100% - 34px);
+    margin: 0 17px 17px;
+  }
+}
+
+
+@media (max-width: 360px) {
+  .settings-profile-card,
+  .settings-panel > header,
+  .settings-form,
+  .settings-session-row {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .settings-logout-button {
+    width:
+      calc(100% - 28px);
+    margin-right: 14px;
+    margin-left: 14px;
+  }
+}

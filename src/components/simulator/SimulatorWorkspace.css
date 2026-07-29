@@ -1116,3 +1116,246 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Step 21: responsive simulator refinements */
+
+@media (max-width: 900px) {
+  .simulator-heading {
+    gap: 24px;
+  }
+
+  .simulator-heading-actions {
+    flex-wrap: wrap;
+  }
+
+  .simulator-heading-actions button {
+    min-height: 44px;
+  }
+
+  .simulator-card,
+  .simulator-preview-card,
+  .simulator-estimate-card,
+  .simulator-run-card {
+    min-width: 0;
+  }
+
+  .simulator-card > header,
+  .simulator-preview-card > header,
+  .simulator-run-card > header {
+    min-width: 0;
+  }
+
+  .simulator-card > header > div,
+  .simulator-preview-card > header > div,
+  .simulator-run-card > header > div {
+    min-width: 0;
+  }
+
+  .simulator-card > header strong,
+  .simulator-preview-card > header strong,
+  .simulator-run-card > header strong {
+    overflow-wrap: anywhere;
+  }
+
+  .simulator-preset,
+  .simulator-goal,
+  .simulator-switch {
+    min-height: 108px;
+  }
+}
+
+
+@media (max-width: 680px) {
+  .simulator-heading h1 {
+    font-size:
+      clamp(2rem, 10vw, 2.9rem);
+    line-height: 1.03;
+  }
+
+  .simulator-heading p {
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+
+  .simulator-heading-actions {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .simulator-heading-actions button {
+    width: 100%;
+    min-height: 46px;
+  }
+
+  .simulator-preset-grid {
+    gap: 12px;
+    margin-top: 22px;
+  }
+
+  .simulator-preset {
+    min-height: 112px;
+    padding: 16px;
+  }
+
+  .simulator-layout {
+    gap: 14px;
+  }
+
+  .simulator-form-column,
+  .simulator-preview-column {
+    gap: 14px;
+  }
+
+  .simulator-card > header,
+  .simulator-preview-card > header,
+  .simulator-run-card > header {
+    min-height: 70px;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .simulator-card > header small,
+  .simulator-preview-card > header small,
+  .simulator-run-card > header small {
+    flex-shrink: 0;
+  }
+
+  .simulator-field-grid,
+  .simulator-goal-grid {
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .simulator-field input[type="text"],
+  .simulator-field input[type="number"],
+  .simulator-field select {
+    height: 50px;
+    font-size: 16px;
+  }
+
+  .simulator-goal {
+    min-height: 94px;
+    padding: 15px;
+  }
+
+  .simulator-switch-grid {
+    margin: 0 16px 16px;
+  }
+
+  .simulator-switch {
+    min-height: 88px;
+    padding: 15px;
+  }
+
+  .simulator-topology {
+    min-height: 330px;
+  }
+
+  .simulator-estimate-card {
+    padding: 16px;
+  }
+
+  .simulator-run-card
+    > .simulator-primary-button {
+    width:
+      calc(100% - 32px);
+    min-height: 48px;
+    margin-right: 16px;
+    margin-left: 16px;
+  }
+}
+
+
+@media (max-width: 480px) {
+  .simulator-heading-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .simulator-preset-grid {
+    margin-top: 18px;
+  }
+
+  .simulator-preset {
+    min-height: 96px;
+  }
+
+  .simulator-card > header,
+  .simulator-preview-card > header,
+  .simulator-run-card > header {
+    align-items: flex-start;
+    flex-direction: column;
+    min-height: 0;
+    padding: 16px;
+  }
+
+  .simulator-card > header small,
+  .simulator-preview-card > header small,
+  .simulator-run-card > header small {
+    margin-top: 2px;
+  }
+
+  .simulator-field-grid,
+  .simulator-goal-grid {
+    padding: 14px;
+  }
+
+  .simulator-field > span {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .simulator-goal {
+    min-height: 88px;
+  }
+
+  .simulator-switch-grid {
+    margin: 0 14px 14px;
+  }
+
+  .simulator-switch {
+    min-height: 84px;
+    padding: 14px;
+  }
+
+  .simulator-switch strong {
+    overflow-wrap: anywhere;
+  }
+
+  .simulator-topology {
+    min-height: 300px;
+  }
+
+  .topology-node {
+    width: 112px;
+    min-height: 70px;
+    padding: 10px;
+  }
+
+  .topology-node strong {
+    overflow-wrap: anywhere;
+  }
+
+  .simulator-estimate-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .simulator-route-preview strong,
+  .simulator-route-preview small {
+    overflow-wrap: anywhere;
+  }
+}
+
+
+@media (max-width: 360px) {
+  .topology-node {
+    width: 100px;
+  }
+
+  .simulator-preset,
+  .simulator-goal,
+  .simulator-switch {
+    padding: 12px;
+  }
+}

@@ -924,3 +924,183 @@ button.auth-input-icon {
     display: none;
   }
 }
+
+/* Step 21: responsive authentication refinements */
+
+@media (max-width: 880px) {
+  .auth-shell {
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .auth-shell-layout {
+    min-height: auto;
+    align-items: start;
+    gap: 34px;
+  }
+
+  .auth-shell-visual,
+  .auth-shell-form-column,
+  .auth-shell-form-wrap {
+    min-width: 0;
+  }
+
+  .auth-shell-form-column {
+    width: 100%;
+  }
+
+  .auth-shell-form-heading h1,
+  .auth-shell-form-heading p,
+  .auth-shell-visual-copy h2,
+  .auth-shell-visual-copy p {
+    overflow-wrap: anywhere;
+  }
+}
+
+
+@media (max-width: 560px) {
+  .auth-shell-header,
+  .auth-shell-layout,
+  .auth-shell-footer {
+    width:
+      calc(100% - 24px);
+  }
+
+  .auth-shell-header {
+    min-height: 66px;
+    gap: 12px;
+  }
+
+  .auth-shell-header-actions {
+    gap: 8px;
+  }
+
+  .auth-shell-header-actions a {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 12px;
+  }
+
+  .auth-shell-layout {
+    gap: 28px;
+    padding: 28px 0 34px;
+  }
+
+  .auth-shell-visual-copy h2 {
+    margin-top: 15px;
+    font-size:
+      clamp(32px, 10vw, 42px);
+    line-height: 1.02;
+  }
+
+  .auth-shell-visual-copy p {
+    margin-top: 17px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .auth-shell-form-wrap {
+    width: 100%;
+    padding: 24px 18px;
+  }
+
+  .auth-shell-form-heading h1 {
+    font-size:
+      clamp(31px, 10vw, 42px);
+    line-height: 1.04;
+  }
+
+  .auth-shell-form-heading p {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .auth-form {
+    margin-top: 23px;
+  }
+
+  .auth-input-wrap input {
+    height: 50px;
+    padding-right: 54px;
+    font-size: 16px;
+  }
+
+  .auth-input-icon {
+    right: 5px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .auth-form-options {
+    flex-wrap: wrap;
+  }
+
+  .auth-checkbox {
+    min-height: 40px;
+    align-items: flex-start;
+    padding: 4px 0;
+  }
+
+  .auth-checkbox input {
+    width: 18px;
+    height: 18px;
+  }
+
+  .auth-form-submit,
+  .auth-demo-button {
+    min-height: 50px;
+  }
+
+  .auth-password-strength
+    > div:last-child {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .auth-shell-switch {
+    line-height: 1.6;
+  }
+
+  .auth-shell-footer {
+    min-height: 54px;
+    padding-bottom:
+      env(safe-area-inset-bottom);
+  }
+}
+
+
+@media (max-width: 380px) {
+  .auth-shell-header,
+  .auth-shell-layout,
+  .auth-shell-footer {
+    width:
+      calc(100% - 20px);
+  }
+
+  .auth-shell-brand {
+    gap: 8px;
+    font-size: 10px;
+  }
+
+  .auth-shell-header-actions a {
+    padding: 0 10px;
+    font-size: 8px;
+  }
+
+  .auth-shell-layout {
+    padding-top: 23px;
+  }
+
+  .auth-shell-form-wrap {
+    padding: 21px 14px;
+  }
+
+  .auth-form-field > span {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+}

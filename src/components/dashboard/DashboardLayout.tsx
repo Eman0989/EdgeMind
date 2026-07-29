@@ -288,6 +288,23 @@ export default function DashboardLayout({
   }, [location.pathname]);
 
   useEffect(() => {
+    if (!sidebarOpen) {
+      return;
+    }
+
+    const previousOverflow =
+      document.body.style.overflow;
+
+    document.body.style.overflow =
+      "hidden";
+
+    return () => {
+      document.body.style.overflow =
+        previousOverflow;
+    };
+  }, [sidebarOpen]);
+
+  useEffect(() => {
     const handlePointerDown = (
       event: MouseEvent,
     ) => {
@@ -362,6 +379,7 @@ export default function DashboardLayout({
       />
 
       <aside
+        id="dashboard-navigation"
         className={[
           "dashboard-sidebar",
           sidebarOpen
@@ -522,6 +540,8 @@ export default function DashboardLayout({
               className="dashboard-menu-button"
               type="button"
               aria-label="Open navigation"
+              aria-expanded={sidebarOpen}
+              aria-controls="dashboard-navigation"
               onClick={() => {
                 setSidebarOpen(true);
               }}

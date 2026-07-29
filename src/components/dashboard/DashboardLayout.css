@@ -1505,8 +1505,40 @@
 }
 
 @media (max-width: 680px) {
+  .dashboard-layout {
+    overflow-x: hidden;
+  }
+
+  .dashboard-main-column {
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
   .dashboard-header {
+    min-height: 68px;
+    gap: 10px;
     padding: 0 16px;
+  }
+
+  .dashboard-header-left {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .dashboard-header-left > div {
+    min-width: 0;
+  }
+
+  .dashboard-header-left strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dashboard-header-actions {
+    flex-shrink: 0;
+    gap: 7px;
   }
 
   .dashboard-page-content {
@@ -1556,6 +1588,51 @@
     right: 9px;
     bottom: 9px;
     min-width: 185px;
+  }
+}
+
+@media (max-width: 420px) {
+  .dashboard-header {
+    padding: 0 12px;
+  }
+
+  .dashboard-page-content {
+    padding: 18px 12px;
+  }
+
+  .dashboard-notification-button,
+  .dashboard-menu-button {
+    width: 34px;
+    height: 34px;
+  }
+
+  .dashboard-profile-button {
+    min-height: 38px;
+    padding: 3px;
+  }
+
+  .dashboard-profile-button > span {
+    width: 30px;
+    height: 30px;
+  }
+
+  .dashboard-profile-menu {
+    position: fixed;
+    top: 74px;
+    right: 12px;
+    width:
+      min(
+        260px,
+        calc(100vw - 24px)
+      );
+  }
+
+  .dashboard-sidebar {
+    width:
+      min(
+        var(--dashboard-sidebar-width),
+        calc(100vw - 38px)
+      );
   }
 }
 
@@ -1614,4 +1691,157 @@
       0 0 28px
       rgba(34, 255, 160, 0.5)
     );
+}
+
+
+/* Step 21: responsive recent-simulation cards */
+
+@media (max-width: 760px) {
+  .dashboard-recent-card {
+    overflow: hidden;
+  }
+
+  .dashboard-recent-card > header {
+    min-height: 68px;
+    padding: 14px 16px;
+  }
+
+  .dashboard-recent-card > header > div {
+    min-width: 0;
+  }
+
+  .dashboard-recent-card > header strong {
+    overflow-wrap: anywhere;
+  }
+
+  .dashboard-recent-card > header > a {
+    min-height: 42px;
+    flex-shrink: 0;
+    padding: 0 8px;
+  }
+
+  .dashboard-simulation-table {
+    min-width: 0;
+    padding: 0 12px 12px;
+  }
+
+  .dashboard-simulation-row.is-heading {
+    display: none;
+  }
+
+  .dashboard-simulation-row:not(.is-heading) {
+    min-height: 0;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 17px 14px;
+    margin-top: 12px;
+    padding: 16px;
+    border:
+      1px solid
+      var(--dashboard-line);
+    border-radius: 9px;
+    background:
+      linear-gradient(
+        155deg,
+        rgba(236, 253, 251, 0.022),
+        rgba(236, 253, 251, 0.006)
+      );
+  }
+
+  .dashboard-simulation-row:not(.is-heading)
+    > span {
+    min-width: 0;
+    display: block;
+    overflow-wrap: anywhere;
+    line-height: 1.5;
+  }
+
+  .dashboard-simulation-row:not(.is-heading)
+    > span:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .dashboard-simulation-row:not(.is-heading)
+    > span::before {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--dashboard-dim);
+    font-family: var(--dashboard-mono);
+    font-size: 6px;
+    letter-spacing: 0.1em;
+  }
+
+  .dashboard-simulation-row:not(.is-heading)
+    > span:nth-child(1)::before {
+    content: "SIMULATION";
+  }
+
+  .dashboard-simulation-row:not(.is-heading)
+    > span:nth-child(2)::before {
+    content: "ROUTE";
+  }
+
+  .dashboard-simulation-row:not(.is-heading)
+    > span:nth-child(3)::before {
+    content: "LATENCY";
+  }
+
+  .dashboard-simulation-row:not(.is-heading)
+    > span:nth-child(4)::before {
+    content: "CACHE HIT";
+  }
+
+  .dashboard-simulation-row:not(.is-heading)
+    > span:nth-child(5)::before {
+    content: "STATUS";
+  }
+
+  .dashboard-simulation-row:not(.is-heading)
+    > span:nth-child(6)::before {
+    content: "UPDATED";
+  }
+
+  .dashboard-simulation-row:not(.is-heading)
+    > span:nth-child(5) {
+    display: block;
+  }
+
+  .dashboard-simulation-row:not(.is-heading)
+    > span:nth-child(5) i {
+    display: inline-block;
+    margin-right: 7px;
+  }
+}
+
+
+@media (max-width: 520px) {
+  .dashboard-recent-card > header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .dashboard-recent-card > header > a {
+    width: 100%;
+    justify-content: center;
+    border:
+      1px solid
+      var(--dashboard-line);
+    border-radius: 7px;
+  }
+
+  .dashboard-simulation-table {
+    padding: 0 10px 10px;
+  }
+
+  .dashboard-simulation-row:not(.is-heading) {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .dashboard-simulation-row:not(.is-heading)
+    > span:first-child {
+    grid-column: auto;
+  }
 }

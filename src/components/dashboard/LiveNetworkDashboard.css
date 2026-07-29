@@ -1215,3 +1215,208 @@
     display: none;
   } 
 }
+
+/* Step 21: responsive Live Network refinements */
+
+@media (max-width: 1180px) {
+  .live-network,
+  .live-network-heading,
+  .live-main-grid,
+  .live-map-card,
+  .live-side-column,
+  .routing-card,
+  .activity-card {
+    min-width: 0;
+  }
+
+  .live-network-heading > div:first-child {
+    min-width: 0;
+  }
+
+  .live-network-heading h1,
+  .live-network-heading p,
+  .live-map-card > header strong,
+  .routing-card > header strong,
+  .activity-card > header strong {
+    overflow-wrap: anywhere;
+  }
+}
+
+
+@media (max-width: 720px) {
+  .live-network-heading {
+    gap: 22px;
+  }
+
+  .live-network-heading h1 {
+    font-size:
+      clamp(2rem, 9vw, 3rem);
+    line-height: 1.04;
+  }
+
+  .live-network-heading p {
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .live-network-actions {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .edge-green-button,
+  .edge-outline-button {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .live-metrics article {
+    min-width: 0;
+    min-height: 160px;
+  }
+
+  .live-main-grid,
+  .live-bottom-grid,
+  .live-side-column {
+    gap: 10px;
+  }
+
+  .live-map-card > header,
+  .activity-card > header {
+    min-height: 68px;
+    padding: 14px 15px;
+  }
+
+  .live-map-card > header > div,
+  .activity-card > header > div {
+    min-width: 0;
+  }
+
+  .live-region-buttons {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 11px 15px;
+    scrollbar-width: thin;
+    overscroll-behavior-x: contain;
+  }
+
+  .live-region-buttons button {
+    min-height: 42px;
+    flex: 0 0 auto;
+    padding: 0 15px;
+  }
+
+  .live-map {
+    min-width: 0;
+    min-height: 420px;
+  }
+
+  .edge-node {
+    width: 58px;
+    height: 58px;
+  }
+
+  .edge-node > i {
+    inset: 11px;
+  }
+
+  .node-detail {
+    right: 10px;
+    bottom: 10px;
+    width:
+      min(
+        240px,
+        calc(100% - 20px)
+      );
+    max-height:
+      calc(100% - 20px);
+    overflow-y: auto;
+    padding: 14px;
+  }
+
+  .routing-card,
+  .activity-card {
+    min-width: 0;
+  }
+}
+
+
+@media (max-width: 520px) {
+  .live-network-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .live-metrics {
+    gap: 9px;
+  }
+
+  .live-metrics article {
+    min-height: 150px;
+    padding: 16px;
+  }
+
+  .live-metrics article > strong {
+    margin-top: 18px;
+    font-size: 26px;
+  }
+
+  .live-map-card > header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .live-map-card > header small {
+    min-height: 30px;
+  }
+
+  .live-map {
+    min-height: 390px;
+  }
+
+  .node-detail {
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    width: auto;
+    max-height: 190px;
+  }
+
+  .node-detail > header {
+    gap: 10px;
+  }
+}
+
+
+@media (max-width: 380px) {
+  .live-network-heading h1 {
+    font-size:
+      clamp(1.85rem, 10vw, 2.35rem);
+  }
+
+  .live-map-card > header,
+  .activity-card > header,
+  .live-region-buttons {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .live-map {
+    min-height: 360px;
+  }
+
+  .edge-node {
+    width: 52px;
+    height: 52px;
+  }
+
+  .edge-node > i {
+    inset: 10px;
+  }
+
+  .node-detail {
+    padding: 12px;
+  }
+}

@@ -630,3 +630,221 @@ header span {
     width: 100%;
   }
 }
+
+
+/* Step 21: responsive simulation history refinements */
+
+@media (max-width: 900px) {
+  .simulations-history-header-actions {
+    width: 100%;
+  }
+
+  .simulations-history-header-actions button {
+    flex: 1;
+    min-width: 150px;
+  }
+
+  .simulations-history-row {
+    gap: 20px;
+  }
+
+  .simulations-history-name,
+  .simulations-history-route,
+  .simulations-history-date {
+    min-width: 0;
+  }
+
+  .simulations-history-name strong,
+  .simulations-history-route strong,
+  .simulations-history-date strong {
+    overflow-wrap: anywhere;
+  }
+
+  .simulations-history-actions button {
+    min-height: 42px;
+  }
+}
+
+
+@media (max-width: 760px) {
+  .simulations-history {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .simulations-history-header {
+    gap: 20px;
+  }
+
+  .simulations-history-header h1 {
+    font-size:
+      clamp(2rem, 10vw, 2.8rem);
+  }
+
+  .simulations-history-header p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .simulations-history-list {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .simulations-history-row {
+    margin-bottom: 14px;
+    padding: 20px;
+    border:
+      1px solid
+      rgba(112, 145, 129, 0.2);
+    border-radius: 15px;
+    background:
+      linear-gradient(
+        145deg,
+        rgba(18, 27, 23, 0.98),
+        rgba(9, 15, 12, 0.98)
+      );
+  }
+
+  .simulations-history-row:last-child {
+    margin-bottom: 0;
+    border-bottom:
+      1px solid
+      rgba(112, 145, 129, 0.2);
+  }
+
+  .simulations-history-metrics {
+    padding: 15px;
+    border:
+      1px solid
+      rgba(112, 145, 129, 0.14);
+    border-radius: 11px;
+    background:
+      rgba(4, 10, 7, 0.42);
+  }
+
+  .simulations-history-actions {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .simulations-history-actions button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .simulations-history-pagination {
+    margin-top: 14px;
+    border:
+      1px solid
+      rgba(112, 145, 129, 0.18);
+    border-radius: 13px;
+  }
+
+  .simulations-dialog-backdrop {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .simulations-dialog {
+    max-height:
+      calc(100dvh - 24px);
+    overflow-y: auto;
+  }
+}
+
+
+@media (max-width: 520px) {
+  .simulations-history {
+    padding: 20px 12px;
+  }
+
+  .simulations-history-header-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .simulations-history-header-actions button {
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+  }
+
+  .simulations-history-summary {
+    gap: 10px;
+  }
+
+  .simulations-history-summary > span {
+    min-height: 84px;
+    padding: 16px;
+  }
+
+  .simulations-history-row {
+    padding: 17px;
+  }
+
+  .simulations-history-metrics {
+    grid-template-columns: 1fr;
+    gap: 13px;
+  }
+
+  .simulations-history-metrics > span {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .simulations-history-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .simulations-history-pagination {
+    padding: 14px;
+  }
+
+  .simulations-history-pagination > div {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .simulations-dialog-backdrop {
+    padding: 8px;
+  }
+
+  .simulations-dialog {
+    max-height:
+      calc(100dvh - 16px);
+    border-radius: 15px;
+  }
+
+  .simulations-dialog > header {
+    grid-template-columns:
+      auto minmax(0, 1fr);
+    gap: 12px;
+    padding: 17px;
+  }
+
+  .simulations-dialog-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+  }
+
+  .simulations-dialog h2 {
+    padding-right: 32px;
+    font-size: 1.25rem;
+  }
+
+  .simulations-dialog form,
+  .simulations-dialog.is-danger > footer {
+    padding: 17px;
+  }
+
+  .simulations-dialog-record {
+    margin: 17px 17px 0;
+  }
+}

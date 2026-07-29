@@ -263,6 +263,41 @@ export default function LandingPage({
     };
   }, []);
 
+  useEffect(() => {
+    if (!menuOpen) {
+      return;
+    }
+
+    const previousOverflow =
+      document.body.style.overflow;
+
+    const handleEscape = (
+      event: KeyboardEvent,
+    ) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+      }
+    };
+
+    document.body.style.overflow =
+      "hidden";
+
+    document.addEventListener(
+      "keydown",
+      handleEscape,
+    );
+
+    return () => {
+      document.body.style.overflow =
+        previousOverflow;
+
+      document.removeEventListener(
+        "keydown",
+        handleEscape,
+      );
+    };
+  }, [menuOpen]);
+
   const closeMenu = () => {
     setMenuOpen(false);
   };
@@ -306,8 +341,13 @@ export default function LandingPage({
             ]
               .filter(Boolean)
               .join(" ")}
-            aria-label="Toggle navigation"
+            aria-label={
+              menuOpen
+                ? "Close navigation"
+                : "Open navigation"
+            }
             aria-expanded={menuOpen}
+            aria-controls="landing-mobile-navigation"
             onClick={() => {
               setMenuOpen(
                 (currentValue) =>
@@ -320,6 +360,7 @@ export default function LandingPage({
           </button>
 
           <nav
+            id="landing-mobile-navigation"
             className={[
               "landing-nav-links",
               menuOpen ? "is-open" : "",
