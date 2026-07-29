@@ -13,6 +13,11 @@ import {
 import {
   useAuth,
 } from "../auth/AuthContext";
+
+import {
+  dashboardService,
+} from "../../services/dashboardService";
+
 import "./DashboardLayout.css";
 
 type NavigationIcon =
@@ -200,6 +205,7 @@ export default function DashboardLayout({
 
   const {
     user,
+    token,
     logout,
   } = useAuth();
 
@@ -212,6 +218,15 @@ export default function DashboardLayout({
     profileOpen,
     setProfileOpen,
   ] = useState(false);
+
+  const [
+    systemSnapshot,
+    setSystemSnapshot,
+  ] = useState<{
+    healthyNodes: number;
+    totalNodes: number;
+    originHealthPercent: number;
+  } | null>(null);
 
   const profileMenuRef =
     useRef<HTMLDivElement | null>(
@@ -231,6 +246,42 @@ export default function DashboardLayout({
     pageTitleForPath(
       location.pathname,
     );
+
+  useEffect(() => {
+    if (!token) {
+      setSystemSnapshot(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    void dashboardService
+      .getSnapshot(token)
+      .then((snapshot) => {
+        if (!cancelled) {
+          setSystemSnapshot({
+            healthyNodes:
+              snapshot.healthyNodes,
+            totalNodes:
+              snapshot.totalNodes,
+            originHealthPercent:
+              snapshot.originHealthPercent,
+          });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSystemSnapshot(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    token,
+    location.pathname,
+  ]);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -403,7 +454,19 @@ export default function DashboardLayout({
 
             <strong>
               <i />
-              All systems operational
+
+              {systemSnapshot
+                ? systemSnapshot
+                    .healthyNodes ===
+                  systemSnapshot
+                    .totalNodes
+                  ? "All systems operational"
+                  : (
+                      `${systemSnapshot.healthyNodes}` +
+                      ` of ${systemSnapshot.totalNodes}` +
+                      " nodes healthy"
+                    )
+                : "Checking system status"}
             </strong>
           </div>
 
@@ -414,17 +477,28 @@ export default function DashboardLayout({
               </small>
 
               <strong>
-                33 / 33
+                {systemSnapshot
+                  ? (
+                      `${systemSnapshot.healthyNodes}` +
+                      ` / ${systemSnapshot.totalNodes}`
+                    )
+                  : "— / —"}
               </strong>
             </span>
 
             <span>
               <small>
-                UPTIME
+                ORIGIN HEALTH
               </small>
 
               <strong>
-                99.99%
+                {systemSnapshot
+                  ? (
+                      `${systemSnapshot.originHealthPercent.toFixed(
+                        1,
+                      )}%`
+                    )
+                  : "—"}
               </strong>
             </span>
           </div>

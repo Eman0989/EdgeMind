@@ -1,6 +1,7 @@
 import {
   apiClient,
 } from "./apiClient";
+
 import type {
   AudienceRegion,
   CompletedSimulation,
@@ -16,15 +17,13 @@ import type {
   TrafficProfile,
 } from "../types/simulation";
 
+
 const LAST_SIMULATION_KEY =
   "edgemind_last_simulation_v1";
 
 const SAVED_SIMULATIONS_KEY =
   "edgemind_saved_simulations_v1";
 
-const USE_REAL_API =
-  import.meta.env
-    .VITE_USE_REAL_API === "true";
 
 const routes: Record<
   AudienceRegion,
@@ -37,6 +36,7 @@ const routes: Record<
     singapore: "SIN → DXB → FRA",
     sydney: "SYD → SIN → FRA",
   },
+
   "north-america": {
     warsaw: "WAW → FRA → NYC",
     frankfurt: "FRA → LON → NYC",
@@ -44,6 +44,7 @@ const routes: Record<
     singapore: "SIN → TYO → SFO",
     sydney: "SYD → HNL → SFO",
   },
+
   "asia-pacific": {
     warsaw: "WAW → FRA → SIN",
     frankfurt: "FRA → DXB → SIN",
@@ -51,6 +52,7 @@ const routes: Record<
     singapore: "SIN → HKG → TYO",
     sydney: "SYD → SIN → TYO",
   },
+
   global: {
     warsaw:
       "WAW → FRA → GLOBAL",
@@ -65,22 +67,21 @@ const routes: Record<
   },
 };
 
+
 function clamp(
   value: number,
-  min: number,
-  max: number,
+  minimum: number,
+  maximum: number,
 ) {
   return Math.min(
-    max,
-    Math.max(min, value),
+    maximum,
+    Math.max(
+      minimum,
+      value,
+    ),
   );
 }
 
-function createSimulationId() {
-  return `SIM-${Math.floor(
-    100 + Math.random() * 900,
-  )}`;
-}
 
 function isSimulationConfig(
   value: unknown,
@@ -98,12 +99,9 @@ function isSimulationConfig(
     >;
 
   return (
-    typeof item.name ===
-      "string" &&
-    typeof item.origin ===
-      "string" &&
-    typeof item.audience ===
-      "string" &&
+    typeof item.name === "string" &&
+    typeof item.origin === "string" &&
+    typeof item.audience === "string" &&
     typeof item.contentType ===
       "string" &&
     typeof item.trafficProfile ===
@@ -125,6 +123,7 @@ function isSimulationConfig(
   );
 }
 
+
 function isSimulationResult(
   value: unknown,
 ): value is SimulationResult {
@@ -141,10 +140,8 @@ function isSimulationResult(
     >;
 
   return (
-    typeof item.id ===
-      "string" &&
-    typeof item.route ===
-      "string" &&
+    typeof item.id === "string" &&
+    typeof item.route === "string" &&
     typeof item.latencyMs ===
       "number" &&
     typeof item.cacheHitRate ===
@@ -157,6 +154,7 @@ function isSimulationResult(
       "number"
   );
 }
+
 
 export function isCompletedSimulation(
   value: unknown,
@@ -184,6 +182,7 @@ export function isCompletedSimulation(
       "string"
   );
 }
+
 
 export function predictSimulation(
   config: SimulationConfig,
@@ -243,11 +242,17 @@ export function predictSimulation(
       contentCacheBonus[
         config.contentType
       ] +
-      (config.warmCache ? 9 : 0) +
-      (config.optimizationGoal ===
-      "cache"
-        ? 6
-        : 0),
+      (
+        config.warmCache
+          ? 9
+          : 0
+      ) +
+      (
+        config.optimizationGoal ===
+        "cache"
+          ? 6
+          : 0
+      ),
     18,
     98.7,
   );
@@ -263,33 +268,57 @@ export function predictSimulation(
         optimizationLatencyBonus[
           config.optimizationGoal
         ] -
-        (config.aiRouting ? 4 : 0),
+        (
+          config.aiRouting
+            ? 4
+            : 0
+        ),
       7,
       120,
     ),
   );
 
-  const originRequests = Math.max(
-    1,
-    Math.round(
-      config.requestsPerSecond *
-        (1 - cacheHitRate / 100),
-    ),
-  );
+  const originRequests =
+    Math.max(
+      1,
+      Math.round(
+        config.requestsPerSecond *
+          (
+            1 -
+            cacheHitRate / 100
+          ),
+      ),
+    );
 
   const bandwidthSavedGb =
-    (config.requestsPerSecond *
+    (
+      config.requestsPerSecond *
       config.payloadSizeKb *
-      (cacheHitRate / 100) *
-      3600) /
+      (
+        cacheHitRate / 100
+      ) *
+      3600
+    ) /
     1_000_000;
 
   const confidence = Math.round(
     clamp(
       76 +
-        (config.aiRouting ? 10 : 0) +
-        (config.failover ? 5 : 0) +
-        (config.warmCache ? 3 : 0),
+        (
+          config.aiRouting
+            ? 10
+            : 0
+        ) +
+        (
+          config.failover
+            ? 5
+            : 0
+        ) +
+        (
+          config.warmCache
+            ? 3
+            : 0
+        ),
       70,
       98,
     ),
@@ -297,20 +326,26 @@ export function predictSimulation(
 
   return {
     route:
-      routes[config.audience][
-        config.origin
-      ],
+      routes[
+        config.audience
+      ][config.origin],
+
     latencyMs,
+
     cacheHitRate: Number(
       cacheHitRate.toFixed(1),
     ),
+
     originRequests,
+
     bandwidthSavedGb: Number(
       bandwidthSavedGb.toFixed(1),
     ),
+
     confidence,
   };
 }
+
 
 function storeLastSimulation(
   simulation: CompletedSimulation,
@@ -318,13 +353,16 @@ function storeLastSimulation(
   try {
     window.sessionStorage.setItem(
       LAST_SIMULATION_KEY,
-      JSON.stringify(simulation),
+      JSON.stringify(
+        simulation,
+      ),
     );
   } catch {
-    // Router state still carries the result
-    // when browser storage is blocked.
+    // Router state still carries
+    // the completed result.
   }
 }
+
 
 export function getLastSimulation() {
   try {
@@ -350,44 +388,34 @@ export function getLastSimulation() {
   }
 }
 
+
 export async function runSimulation(
   config: SimulationConfig,
+  token: string,
 ) {
-  let completed:
-    CompletedSimulation;
-
-  if (USE_REAL_API) {
-    const requestBody:
-      RunSimulationRequest = {
-        config,
-      };
-
-    completed =
-      await apiClient.post<
-        RunSimulationResponse
-      >(
-        "/api/simulations",
-        requestBody,
-      );
-  } else {
-    const prediction =
-      predictSimulation(config);
-
-    completed = {
+  const requestBody:
+    RunSimulationRequest = {
       config,
-      result: {
-        id: createSimulationId(),
-        ...prediction,
-      },
-      completedAt:
-        new Date().toISOString(),
     };
-  }
 
-  storeLastSimulation(completed);
+  const completed =
+    await apiClient.post<
+      RunSimulationResponse
+    >(
+      "/api/simulations",
+      requestBody,
+      {
+        token,
+      },
+    );
+
+  storeLastSimulation(
+    completed,
+  );
 
   return completed;
 }
+
 
 export function saveSimulation(
   simulation: CompletedSimulation,
@@ -418,6 +446,7 @@ export function saveSimulation(
   return saved;
 }
 
+
 export function getSavedSimulations():
   SavedSimulation[] {
   try {
@@ -433,7 +462,11 @@ export function getSavedSimulations():
     const parsedValue: unknown =
       JSON.parse(rawValue);
 
-    if (!Array.isArray(parsedValue)) {
+    if (
+      !Array.isArray(
+        parsedValue,
+      )
+    ) {
       return [];
     }
 
@@ -441,28 +474,42 @@ export function getSavedSimulations():
       .filter(
         isCompletedSimulation,
       )
-      .map((item) => ({
-        ...item,
-        savedAt:
-          typeof (
-            item as Partial<
-              SavedSimulation
-            >
-          ).savedAt === "string"
-            ? (
-                item as SavedSimulation
-              ).savedAt
-            : item.completedAt,
-      }));
+      .map(
+        (item) => ({
+          ...item,
+
+          savedAt:
+            typeof (
+              item as Partial<
+                SavedSimulation
+              >
+            ).savedAt ===
+            "string"
+              ? (
+                  item as SavedSimulation
+                ).savedAt
+              : item.completedAt,
+        }),
+      );
   } catch {
     return [];
   }
 }
 
+
 export const simulationService = {
-  predict: predictSimulation,
-  run: runSimulation,
-  getLast: getLastSimulation,
-  save: saveSimulation,
-  getSaved: getSavedSimulations,
+  predict:
+    predictSimulation,
+
+  run:
+    runSimulation,
+
+  getLast:
+    getLastSimulation,
+
+  save:
+    saveSimulation,
+
+  getSaved:
+    getSavedSimulations,
 };

@@ -8,6 +8,10 @@ import {
 import {
   useNavigate,
 } from "react-router-dom";
+
+import {
+  useAuth,
+} from "../auth/AuthContext";
 import "./SimulatorWorkspace.css";
 
 import type {
@@ -180,6 +184,10 @@ function formatInteger(
 export default function SimulatorWorkspace() {
   const navigate = useNavigate();
 
+  const {
+    token,
+  } = useAuth();
+
   const [config, setConfig] =
     useState<SimulationConfig>(
       defaultConfig,
@@ -284,6 +292,16 @@ export default function SimulatorWorkspace() {
       return;
     }
 
+    if (!token) {
+      setRunLog([
+        `${new Date().toLocaleTimeString(
+          "en-GB",
+        )} · Authentication required`,
+      ]);
+
+      return;
+    }
+
     setIsRunning(true);
     setProgress(0);
     setResult(null);
@@ -353,7 +371,10 @@ export default function SimulatorWorkspace() {
           }
 
           void simulationService
-            .run(config)
+            .run(
+              config,
+              token,
+            )
             .then(
               (
                 completedSimulation:
