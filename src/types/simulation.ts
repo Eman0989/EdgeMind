@@ -86,6 +86,9 @@ export interface SimulationHistoryItem {
 export interface SimulationListResponse {
   simulations: SimulationHistoryItem[];
   total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 export interface SimulationRenameRequest {

@@ -320,3 +320,46 @@
       repeat(3, minmax(0, 1fr));
   }
 }
+
+
+.simulations-history-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(112, 145, 129, 0.16);
+  background: rgba(13, 21, 17, 0.96);
+}
+
+.simulations-history-pagination > span {
+  color: rgba(192, 211, 201, 0.68);
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+}
+
+.simulations-history-pagination > div {
+  display: flex;
+  gap: 9px;
+}
+
+.simulations-history-pagination button {
+  min-height: 34px;
+  padding: 0 13px;
+  font-size: 0.73rem;
+}
+
+@media (max-width: 600px) {
+  .simulations-history-pagination {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .simulations-history-pagination > div {
+    width: 100%;
+  }
+
+  .simulations-history-pagination button {
+    flex: 1;
+  }
+}

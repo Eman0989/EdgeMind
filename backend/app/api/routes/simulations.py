@@ -8,10 +8,14 @@ from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
+    Query,
     Response,
     status,
 )
-from sqlalchemy import select
+from sqlalchemy import (
+    func,
+    select,
+)
 from sqlalchemy.exc import (
     SQLAlchemyError,
 )
@@ -292,7 +296,44 @@ def history_item(
 def list_simulations(
     current_user: CurrentUser,
     database: DatabaseSession,
+    page: Annotated[
+        int,
+        Query(
+            ge=1,
+        ),
+    ] = 1,
+    page_size: Annotated[
+        int,
+        Query(
+            alias="pageSize",
+            ge=1,
+            le=100,
+        ),
+    ] = 10,
 ) -> SimulationListResponse:
+    total = int(
+        database.scalar(
+            select(
+                func.count(
+                    Simulation.id
+                )
+            )
+            .where(
+                Simulation.user_id
+                == current_user.id
+            )
+        )
+        or 0
+    )
+
+    total_pages = (
+        total + page_size - 1
+    ) // page_size
+
+    offset = (
+        page - 1
+    ) * page_size
+
     simulations = list(
         database.scalars(
             select(Simulation)
@@ -303,6 +344,8 @@ def list_simulations(
             .order_by(
                 Simulation.id.desc()
             )
+            .offset(offset)
+            .limit(page_size)
         ).all()
     )
 
@@ -314,7 +357,10 @@ def list_simulations(
             for simulation
             in simulations
         ],
-        total=len(simulations),
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=total_pages,
     )
 
 

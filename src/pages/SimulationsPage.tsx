@@ -61,6 +61,9 @@ function getErrorMessage(
 }
 
 
+const PAGE_SIZE = 10;
+
+
 export default function SimulationsPage() {
   const navigate = useNavigate();
 
@@ -94,6 +97,21 @@ export default function SimulationsPage() {
     null,
   );
 
+  const [
+    page,
+    setPage,
+  ] = useState(1);
+
+  const [
+    total,
+    setTotal,
+  ] = useState(0);
+
+  const [
+    totalPages,
+    setTotalPages,
+  ] = useState(0);
+
 
   const loadSimulations =
     useCallback(
@@ -114,10 +132,20 @@ export default function SimulationsPage() {
           const response =
             await simulationService.list(
               token,
+              page,
+              PAGE_SIZE,
             );
 
           setSimulations(
             response.simulations,
+          );
+
+          setTotal(
+            response.total,
+          );
+
+          setTotalPages(
+            response.totalPages,
           );
         } catch (requestError) {
           setError(
@@ -129,7 +157,10 @@ export default function SimulationsPage() {
           setLoading(false);
         }
       },
-      [token],
+      [
+        page,
+        token,
+      ],
     );
 
 
@@ -335,14 +366,17 @@ export default function SimulationsPage() {
           token,
         );
 
-        setSimulations(
-          (current) =>
-            current.filter(
-              (item) =>
-                item.id !==
-                simulation.id,
-            ),
-        );
+        if (
+          simulations.length === 1 &&
+          page > 1
+        ) {
+          setPage(
+            (currentPage) =>
+              currentPage - 1,
+          );
+        } else {
+          await loadSimulations();
+        }
       } catch (requestError) {
         setError(
           getErrorMessage(
@@ -410,7 +444,7 @@ export default function SimulationsPage() {
             </small>
 
             <strong>
-              {simulations.length}
+              {total}
             </strong>
           </span>
 
@@ -646,6 +680,59 @@ export default function SimulationsPage() {
                   );
                 },
               )}
+
+              <footer className="simulations-history-pagination">
+                <span>
+                  Page{" "}
+                  {totalPages === 0
+                    ? 0
+                    : page}{" "}
+                  of {totalPages}
+                  {" · "}
+                  {total} saved run
+                  {total === 1
+                    ? ""
+                    : "s"}
+                </span>
+
+                <div>
+                  <button
+                    type="button"
+                    disabled={
+                      loading ||
+                      page <= 1
+                    }
+                    onClick={() => {
+                      setPage(
+                        (currentPage) =>
+                          Math.max(
+                            1,
+                            currentPage - 1,
+                          ),
+                      );
+                    }}
+                  >
+                    Previous
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={
+                      loading ||
+                      totalPages === 0 ||
+                      page >= totalPages
+                    }
+                    onClick={() => {
+                      setPage(
+                        (currentPage) =>
+                          currentPage + 1,
+                      );
+                    }}
+                  >
+                    Next
+                  </button>
+                </div>
+              </footer>
             </div>
           )}
       </section>

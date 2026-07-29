@@ -170,6 +170,18 @@ class SimulationListResponse(
         ge=0,
     )
 
+    page: int = Field(
+        ge=1,
+    )
+
+    page_size: int = Field(
+        ge=1,
+    )
+
+    total_pages: int = Field(
+        ge=0,
+    )
+
 
 class SimulationRenameRequest(
     CamelCaseModel

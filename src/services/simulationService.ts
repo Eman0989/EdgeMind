@@ -416,11 +416,19 @@ export async function runSimulation(
 
 export function listSimulations(
   token: string,
+  page = 1,
+  pageSize = 10,
 ) {
+  const query =
+    new URLSearchParams({
+      page: String(page),
+      pageSize: String(pageSize),
+    });
+
   return apiClient.get<
     SimulationListResponse
   >(
-    "/api/simulations",
+    `/api/simulations?${query.toString()}`,
     {
       token,
     },
