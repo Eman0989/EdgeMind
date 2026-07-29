@@ -719,6 +719,27 @@ Eman0989
 ```
 
 ---
+## 🌐 Live Application
+
+### Frontend
+
+```text
+https://edgemind-web-eman0989.onrender.com
+```
+
+### Backend Health Check
+
+```text
+https://edgemind-api-eman0989.onrender.com/api/health
+```
+
+### API Documentation
+
+```text
+https://edgemind-api-eman0989.onrender.com/docs
+```
+
+---
 
 ## 🌐 Repository
 
