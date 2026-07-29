@@ -26,6 +26,7 @@ from app.models.user import User
 from app.schemas.auth import (
     TokenResponse,
     UserLogin,
+    UserProfileUpdate,
     UserRegister,
     UserResponse,
 )
@@ -194,4 +195,89 @@ def login_user(
 def read_current_user(
     current_user: CurrentUser,
 ) -> User:
+    return current_user
+
+
+
+@router.patch(
+    "/me",
+    response_model=UserResponse,
+    summary="Update the current user profile",
+)
+def update_current_user(
+    payload: UserProfileUpdate,
+    current_user: CurrentUser,
+    database: DatabaseSession,
+) -> User:
+    if (
+        payload.full_name is None
+        and payload.email is None
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Provide a full name, "
+                "an email address, or both."
+            ),
+        )
+
+    if payload.full_name is not None:
+        full_name = " ".join(
+            payload.full_name.split()
+        )
+
+        if len(full_name) < 2:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    "Full name must contain "
+                    "at least two characters."
+                ),
+            )
+
+        current_user.full_name = full_name
+
+    if payload.email is not None:
+        email = str(
+            payload.email
+        ).strip().lower()
+
+        existing_user = database.scalar(
+            select(User).where(
+                User.email == email,
+                User.id != current_user.id,
+            )
+        )
+
+        if existing_user is not None:
+            raise HTTPException(
+                status_code=(
+                    status.HTTP_409_CONFLICT
+                ),
+                detail=(
+                    "An account with this "
+                    "email already exists."
+                ),
+            )
+
+        current_user.email = email
+
+    try:
+        database.add(current_user)
+        database.commit()
+        database.refresh(current_user)
+
+    except IntegrityError:
+        database.rollback()
+
+        raise HTTPException(
+            status_code=(
+                status.HTTP_409_CONFLICT
+            ),
+            detail=(
+                "An account with this "
+                "email already exists."
+            ),
+        ) from None
+
     return current_user

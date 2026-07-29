@@ -9,6 +9,7 @@ import type {
   LoginRequest,
   RegisterRequest,
   TokenResponse,
+  UpdateProfileRequest,
 } from "../types/auth";
 
 const AUTH_SESSION_KEY =
@@ -211,6 +212,40 @@ export const authService = {
       true,
     );
   },
+
+  async updateProfile(
+    session: AuthSession,
+    profile: UpdateProfileRequest,
+  ) {
+    const backendUser =
+      await apiClient.patch<BackendUser>(
+        "/api/auth/me",
+        profile,
+        {
+          token: session.token,
+        },
+      );
+
+    const updatedSession: AuthSession = {
+      token: session.token,
+      user: mapBackendUser(
+        backendUser,
+      ),
+    };
+
+    const persistent =
+      window.localStorage.getItem(
+        AUTH_SESSION_KEY,
+      ) !== null;
+
+    saveAuthSession(
+      updatedSession,
+      persistent,
+    );
+
+    return updatedSession;
+  },
+
 
   async restoreSession(
     session: AuthSession,

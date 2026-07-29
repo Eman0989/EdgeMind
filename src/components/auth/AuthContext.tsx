@@ -37,6 +37,12 @@ interface RegisterInput {
   password: string;
 }
 
+interface UpdateProfileInput {
+  name: string;
+  email: string;
+}
+
+
 interface AuthResult {
   ok: boolean;
   message: string;
@@ -51,6 +57,9 @@ interface AuthContextValue {
   ) => Promise<AuthResult>;
   register: (
     input: RegisterInput,
+  ) => Promise<AuthResult>;
+  updateProfile: (
+    input: UpdateProfileInput,
   ) => Promise<AuthResult>;
   logout: () => void;
 }
@@ -207,6 +216,51 @@ export function AuthProvider({
     [],
   );
 
+  const updateProfile = useCallback(
+    async ({
+      name,
+      email,
+    }: UpdateProfileInput): Promise<AuthResult> => {
+      if (!session) {
+        return {
+          ok: false,
+          message:
+            "You must be signed in to update your profile.",
+        };
+      }
+
+      try {
+        const updatedSession =
+          await authService.updateProfile(
+            session,
+            {
+              full_name: name.trim(),
+              email:
+                normalizeEmail(email),
+            },
+          );
+
+        setSession(updatedSession);
+
+        return {
+          ok: true,
+          message:
+            "Profile updated successfully.",
+        };
+      } catch (error) {
+        return {
+          ok: false,
+          message: getErrorMessage(
+            error,
+            "The profile could not be updated.",
+          ),
+        };
+      }
+    },
+    [session],
+  );
+
+
   const logout = useCallback(() => {
     authService.clearSession();
     setSession(null);
@@ -223,12 +277,14 @@ export function AuthProvider({
           session !== null,
         login,
         register,
+        updateProfile,
         logout,
       }),
       [
         session,
         login,
         register,
+        updateProfile,
         logout,
       ],
     );

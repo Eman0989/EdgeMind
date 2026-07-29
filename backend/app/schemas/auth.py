@@ -46,6 +46,16 @@ class UserResponse(BaseModel):
     )
 
 
+class UserProfileUpdate(BaseModel):
+    full_name: str | None = Field(
+        default=None,
+        min_length=2,
+        max_length=120,
+    )
+
+    email: EmailStr | None = None
+
+
 class TokenResponse(BaseModel):
     access_token: str
 

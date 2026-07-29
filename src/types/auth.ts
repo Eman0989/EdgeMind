@@ -24,6 +24,12 @@ export interface RegisterRequest {
   password: string;
 }
 
+export interface UpdateProfileRequest {
+  full_name: string;
+  email: string;
+}
+
+
 export interface TokenResponse {
   access_token: string;
   token_type: "bearer";

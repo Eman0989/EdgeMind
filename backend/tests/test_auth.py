@@ -210,3 +210,104 @@ def test_profile_requires_authentication(
         "Could not validate "
         "authentication credentials."
     )
+
+
+
+def test_update_current_user_profile(
+    client: TestClient,
+) -> None:
+    register_user(client)
+
+    login_response = login_user(client)
+
+    token = login_response.json()[
+        "access_token"
+    ]
+
+    update_response = client.patch(
+        "/api/auth/me",
+        headers={
+            "Authorization":
+                f"Bearer {token}",
+        },
+        json={
+            "full_name":
+                "  Updated   Operator  ",
+            "email":
+                "UPDATED@EDGEMIND.DEV",
+        },
+    )
+
+    assert (
+        update_response.status_code
+        == 200
+    )
+
+    updated_user = (
+        update_response.json()
+    )
+
+    assert (
+        updated_user["full_name"]
+        == "Updated Operator"
+    )
+
+    assert (
+        updated_user["email"]
+        == "updated@edgemind.dev"
+    )
+
+    old_login = login_user(client)
+
+    assert old_login.status_code == 401
+
+    new_login = login_user(
+        client,
+        email="updated@edgemind.dev",
+    )
+
+    assert new_login.status_code == 200
+
+
+def test_profile_update_rejects_duplicate_email(
+    client: TestClient,
+) -> None:
+    register_user(
+        client,
+        email="first@edgemind.dev",
+    )
+
+    register_user(
+        client,
+        email="second@edgemind.dev",
+    )
+
+    login_response = login_user(
+        client,
+        email="second@edgemind.dev",
+    )
+
+    token = login_response.json()[
+        "access_token"
+    ]
+
+    response = client.patch(
+        "/api/auth/me",
+        headers={
+            "Authorization":
+                f"Bearer {token}",
+        },
+        json={
+            "email":
+                "first@edgemind.dev",
+        },
+    )
+
+    assert response.status_code == 409
+
+    assert response.json()[
+        "detail"
+    ] == (
+        "An account with this "
+        "email already exists."
+    )
