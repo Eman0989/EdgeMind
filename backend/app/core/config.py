@@ -77,6 +77,49 @@ class Settings(BaseSettings):
         ).rstrip("/") or "/api"
 
     @field_validator(
+        "database_url",
+        mode="before",
+    )
+    @classmethod
+    def normalize_database_url(
+        cls,
+        value: object,
+    ) -> str:
+        default_url = (
+            "sqlite:///./edgemind.db"
+        )
+
+        if not isinstance(value, str):
+            return default_url
+
+        normalized = value.strip()
+
+        if not normalized:
+            return default_url
+
+        if normalized.startswith(
+            "postgres://"
+        ):
+            return (
+                "postgresql+psycopg://"
+                + normalized[
+                    len("postgres://"):
+                ]
+            )
+
+        if normalized.startswith(
+            "postgresql://"
+        ):
+            return (
+                "postgresql+psycopg://"
+                + normalized[
+                    len("postgresql://"):
+                ]
+            )
+
+        return normalized
+
+    @field_validator(
         "access_token_expire_minutes",
     )
     @classmethod
