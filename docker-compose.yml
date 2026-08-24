@@ -1,0 +1,43 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    environment:
+      ENVIRONMENT: production
+      DEBUG: "false"
+      HOST: 0.0.0.0
+      PORT: "8000"
+      DATABASE_URL: sqlite:////data/edgemind.db
+      SECRET_KEY: "${SECRET_KEY:-edgemind-local-compose-secret-key-change-before-production}"
+
+    volumes:
+      - edgemind-data:/data
+
+    ports:
+      - "8001:8000"
+
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ""
+
+    environment:
+      BACKEND_UPSTREAM: http://backend:8000
+
+    ports:
+      - "8080:80"
+
+    depends_on:
+      backend:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+volumes:
+  edgemind-data:
