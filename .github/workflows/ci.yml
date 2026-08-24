@@ -194,29 +194,33 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build frontend image
-        run: |
-          docker build \
-            -t "${FRONTEND_IMAGE}:latest" \
-            -t "${FRONTEND_IMAGE}:sha-${GITHUB_SHA}" \
-            .
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-      - name: Build backend image
-        run: |
-          docker build \
-            -t "${BACKEND_IMAGE}:latest" \
-            -t "${BACKEND_IMAGE}:sha-${GITHUB_SHA}" \
-            ./backend
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Push frontend image
-        run: |
-          docker push "${FRONTEND_IMAGE}:latest"
-          docker push "${FRONTEND_IMAGE}:sha-${GITHUB_SHA}"
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:latest
+            ${{ env.FRONTEND_IMAGE }}:sha-${{ github.sha }}
 
-      - name: Push backend image
-        run: |
-          docker push "${BACKEND_IMAGE}:latest"
-          docker push "${BACKEND_IMAGE}:sha-${GITHUB_SHA}"
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:latest
+            ${{ env.BACKEND_IMAGE }}:sha-${{ github.sha }}
 
       - name: Show published image names
         run: |
