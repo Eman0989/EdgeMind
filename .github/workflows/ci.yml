@@ -69,3 +69,96 @@ jobs:
 
       - name: Run backend tests
         run: python -m pytest
+
+  docker:
+    name: Docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose
+        run: docker compose config --quiet
+
+      - name: Build Docker images
+        run: docker compose build
+
+      - name: Start Docker stack
+        env:
+          SECRET_KEY: edgemind-ci-docker-secret-key
+        run: docker compose up -d
+
+      - name: Wait for healthy containers
+        run: |
+          for attempt in {1..30}; do
+            backend_id="$(docker compose ps -q backend)"
+            frontend_id="$(docker compose ps -q frontend)"
+
+            backend_health="$(
+              docker inspect \
+                --format='{{.State.Health.Status}}' \
+                "$backend_id" 2>/dev/null || true
+            )"
+
+            frontend_health="$(
+              docker inspect \
+                --format='{{.State.Health.Status}}' \
+                "$frontend_id" 2>/dev/null || true
+            )"
+
+            echo "Attempt $attempt: backend=$backend_health frontend=$frontend_health"
+
+            if [[ "$backend_health" == "healthy" && "$frontend_health" == "healthy" ]]; then
+              echo "Both containers are healthy."
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          echo "Containers did not become healthy."
+          docker compose ps
+          docker compose logs
+          exit 1
+
+      - name: Test backend health
+        run: |
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            http://127.0.0.1:8001/api/health
+
+      - name: Test frontend health
+        run: |
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            http://127.0.0.1:8080/health
+
+      - name: Test API through Nginx
+        run: |
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            http://127.0.0.1:8080/api/health
+
+      - name: Test React Router fallback
+        run: |
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            http://127.0.0.1:8080/login \
+            > /dev/null
+
+      - name: Show Docker logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop Docker stack
+        if: always()
+        run: docker compose down -v
